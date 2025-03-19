@@ -1,11 +1,15 @@
-import HomePage from "./pages/home-page"
+import { RouterProvider } from "react-router-dom"
+import { AuthProvider } from "./contexts/AuthContext"
+import router from "@/routes/router"
+import "./index.css"
 
 function App() {
-
   return (
-    <>
-      <HomePage />
-    </>
+
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+
   )
 }
 

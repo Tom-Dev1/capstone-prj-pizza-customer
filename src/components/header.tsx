@@ -62,6 +62,7 @@ export default function Header() {
         { name: "Workshop", href: "#workshop" },
         { name: "Testimonials", href: "#testimonials" },
         { name: "Contact", href: "#contact" },
+        { name: "Login", href: "/auth/login" },
     ]
 
     return (
@@ -100,7 +101,9 @@ export default function Header() {
 
                         {/* Order Button */}
                         <div className="hidden md:block">
-                            <Button className="bg-primary text-white hover:bg-primary/90">Order Now</Button>
+                            <a href="/auth/login">
+                                <Button className="bg-primary text-white hover:bg-primary/90">Order Now</Button>
+                            </a>
                         </div>
 
                         {/* Mobile Menu - Using Sheet */}
@@ -140,7 +143,9 @@ export default function Header() {
                                         </ul>
                                     </nav>
                                     <div className="p-6 border-t">
-                                        <Button className="w-full bg-primary text-white hover:bg-primary/90">Order Now</Button>
+                                        <a href="/auth/login">
+                                            <Button className="w-full bg-primary text-white hover:bg-primary/90">Order Now</Button>
+                                        </a>
                                     </div>
                                 </div>
                             </SheetContent>
