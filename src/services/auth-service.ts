@@ -25,6 +25,14 @@ export type LoginResult = any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RegisterResult = any
 
+export type SendCodeRequest = {
+    customerId: string
+}
+
+export type VerifyEmail = {
+    customerId: string,
+    code: string
+}
 export type ApiErrorResponse = {
     error: {
         code: number
@@ -64,7 +72,30 @@ class AuthService {
             throw error
         }
     }
+    async sendVerifyCode(customerData: SendCodeRequest): Promise<ApiResponse<void>> {
+
+        try {
+            return await post<void>(API_ENDPOINTS.AUTH.SENDCODE, customerData)
+        } catch (error) {
+            console.log("Send verify code error");
+            throw error
+        }
+
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async verifyEmail(customerData: VerifyEmail): Promise<ApiResponse<any>> {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return await post<any>(API_ENDPOINTS.AUTH.VERIFYMAIL, customerData)
+        } catch (error) {
+            console.log("Verify email code is error ");
+
+            throw error
+        }
+    }
 }
+
 
 // Create and export a singleton instance
 export const authService = new AuthService()

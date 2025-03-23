@@ -3,10 +3,15 @@ import HomePage from "@/pages/home-page"
 import AuthLayout from "@/layouts/AuthLayout"
 import LoginPage from "@/pages/auth/LoginPage"
 import RegisterPage from "@/pages/auth/RegisterPage"
-import CustomerDashboard from "@/pages/auth/dashboard"
-import { ProtectedRoute } from "./ProtectedRoute"
+import CustomerDashboard from "@/pages/customer/dashboard"
 import { GuestRoute } from "./GuestRoute"
 import UserLayout from "@/layouts/UserLayout"
+import NotFound from "@/pages/not-found"
+import CustomerSetting from "@/pages/customer/setting"
+import VerifyPage from "@/pages/auth/verify-page"
+import AuthVerificationCheck from "@/components/auth-verification-check"
+import { ProtectedRoute } from "./ProtectedRoute"
+
 
 
 
@@ -42,47 +47,67 @@ const routes: RouteObject[] = [
                     </GuestRoute>
                 ),
             },
+            {
+                path: "verify",
+                element: (
+
+
+                    <ProtectedRoute>
+                        <VerifyPage />
+                    </ProtectedRoute>
+
+
+                ),
+            },
         ],
     },
     {
         // Protected routes - only accessible when logged in
         path: "/customer",
+        element: (
+            <AuthVerificationCheck>
+                <UserLayout />
+            </AuthVerificationCheck>),
         children: [
             {
                 path: "dashboard",
                 element: (
-                    <UserLayout>
 
+                    <CustomerDashboard />
 
-                        <ProtectedRoute>
-                            <CustomerDashboard />
-                        </ProtectedRoute>
-                    </UserLayout>
                 ),
             },
             // Add more customer routes here
             {
                 path: "orders",
                 element: (
-                    <ProtectedRoute>
-                        <div>Orders Page (To be implemented)</div>
-                    </ProtectedRoute>
+
+                    <div>Orders Page (To be implemented)</div>
+
                 ),
             },
             {
                 path: "favorites",
                 element: (
-                    <ProtectedRoute>
-                        <div>Favorites Page (To be implemented)</div>
-                    </ProtectedRoute>
+
+                    <div>Favorites Page (To be implemented)</div>
+
                 ),
             },
             {
                 path: "workshops",
                 element: (
-                    <ProtectedRoute>
-                        <div>Workshops Page (To be implemented)</div>
-                    </ProtectedRoute>
+
+                    <div>Workshops Page (To be implemented)</div>
+
+                ),
+            },
+            {
+                path: "settings",
+                element: (
+
+                    <CustomerSetting />
+
                 ),
             },
         ],
@@ -90,7 +115,7 @@ const routes: RouteObject[] = [
 
     {
         path: "*",
-        element: <div>Page Not Found</div>,
+        element: <NotFound />,
     },
 ]
 

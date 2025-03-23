@@ -6,9 +6,12 @@ import { Link } from "react-router-dom"
 
 export default function CustomerDashboard() {
     const { user } = useAuth()
+    console.log(user?.CustomerId);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+
+
+        <div className="">
 
 
             <main className="container mx-auto px-4 py-8">

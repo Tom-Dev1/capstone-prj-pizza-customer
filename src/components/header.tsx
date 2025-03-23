@@ -26,17 +26,13 @@ export default function Header() {
     const { isAuthenticated, user, logout } = useAuth()
     const location = useLocation()
 
-    // Check if current route is an auth route
-    const isAuthRoute = location.pathname.startsWith("/auth")
+    // Check if current route is home page - handle both "/" and base URL
+    const isHomePage =
+        location.pathname === "/" ||
+        location.pathname === "/index.html" ||
+        location.pathname.match(/^\/(index\.html)?(\?.*)?$/)
 
     useEffect(() => {
-        // Skip scroll effect if on auth route
-        if (isAuthRoute) {
-            setScrolled(true)
-            setVisible(true)
-            return
-        }
-
         const controlHeader = () => {
             const currentScrollY = window.scrollY
 
@@ -80,7 +76,7 @@ export default function Header() {
             window.removeEventListener("scroll", controlHeader)
             // No need to clean up the body styles as they should persist
         }
-    }, [lastScrollY, scrolled, visible, isAuthRoute])
+    }, [lastScrollY, scrolled, visible])
 
     // Define navigation items based on authentication status
     const getNavItems = () => {
@@ -116,14 +112,13 @@ export default function Header() {
             .toUpperCase()
             .substring(0, 2)
     }
-
     return (
         <AnimatePresence>
             {visible && (
                 <motion.header
                     className={cn(
                         "fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-in-out overflow-x-hidden",
-                        isAuthRoute || scrolled ? "bg-white shadow-md" : "bg-transparent",
+                        isHomePage && !scrolled ? "bg-transparent" : "bg-white shadow-md",
                     )}
                     initial={{ y: -100 }}
                     animate={{ y: 0 }}
@@ -143,7 +138,7 @@ export default function Header() {
                                     to={item.href}
                                     className={cn(
                                         "font-medium transition-colors hover:text-primary",
-                                        isAuthRoute || scrolled ? "text-gray-800" : "text-white",
+                                        isHomePage && !scrolled ? "text-white" : "text-gray-800",
                                     )}
                                 >
                                     {item.name}
@@ -155,7 +150,7 @@ export default function Header() {
                         <div className="hidden md:block">
                             {isAuthenticated ? (
                                 <div className="flex items-center gap-4">
-                                    <span className={cn("font-medium", isAuthRoute || scrolled ? "text-gray-800" : "text-white")}>
+                                    <span className={cn("font-medium", isHomePage && !scrolled ? "text-white" : "text-gray-800")}>
                                         {user?.name}
                                     </span>
                                     <DropdownMenu>
@@ -169,30 +164,30 @@ export default function Header() {
                                             </Avatar>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-56 z-50" sideOffset={5} alignOffset={0}>
-                                            <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
+                                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild>
                                                 <Link to="/customer/dashboard" className="flex w-full cursor-pointer items-center">
                                                     <User className="mr-2 h-4 w-4" />
-                                                    <span>Trang cá nhân</span>
+                                                    <span>Profile</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link to="/customer/orders" className="flex w-full cursor-pointer items-center">
                                                     <CreditCard className="mr-2 h-4 w-4" />
-                                                    <span>Đơn hàng của tôi</span>
+                                                    <span>My Orders</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link to="/customer/settings" className="flex w-full cursor-pointer items-center">
                                                     <Settings className="mr-2 h-4 w-4" />
-                                                    <span>Cài đặt</span>
+                                                    <span>Settings</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500 cursor-pointer">
                                                 <LogOut className="mr-2 h-4 w-4" />
-                                                <span>Đăng xuất</span>
+                                                <span>Log Out</span>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -208,7 +203,7 @@ export default function Header() {
                         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="md:hidden p-0 h-auto w-auto">
-                                    <Menu className={isAuthRoute || scrolled ? "text-gray-800" : "text-white"} size={24} />
+                                    <Menu className={isHomePage && !scrolled ? "text-white" : "text-gray-800"} size={24} />
                                     <span className="sr-only">Toggle menu</span>
                                 </Button>
                             </SheetTrigger>
@@ -258,7 +253,7 @@ export default function Header() {
                                                 <Link to="/customer/dashboard" onClick={() => setMobileMenuOpen(false)}>
                                                     <Button className="w-full bg-primary text-white hover:bg-primary/90 mb-2">
                                                         <User className="mr-2 h-4 w-4" />
-                                                        Trang cá nhân
+                                                        Profile
                                                     </Button>
                                                 </Link>
                                                 <Link to="/customer/orders" onClick={() => setMobileMenuOpen(false)}>
@@ -267,7 +262,7 @@ export default function Header() {
                                                         className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2"
                                                     >
                                                         <CreditCard className="mr-2 h-4 w-4" />
-                                                        Đơn hàng của tôi
+                                                        My Orders
                                                     </Button>
                                                 </Link>
                                                 <Link to="/customer/settings" onClick={() => setMobileMenuOpen(false)}>
@@ -276,7 +271,7 @@ export default function Header() {
                                                         className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2"
                                                     >
                                                         <Settings className="mr-2 h-4 w-4" />
-                                                        Cài đặt
+                                                        Settings
                                                     </Button>
                                                 </Link>
                                                 <Button
@@ -288,7 +283,7 @@ export default function Header() {
                                                     className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                                                 >
                                                     <LogOut className="mr-2 h-4 w-4" />
-                                                    Đăng xuất
+                                                    Log Out
                                                 </Button>
                                             </div>
                                         ) : (

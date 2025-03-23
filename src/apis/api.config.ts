@@ -9,6 +9,9 @@ export const API_ENDPOINTS = {
     AUTH: {
         LOGIN: "/auth/customer/login",
         REGISTER: "/auth/customer/register",
+        SENDCODE: "/auth/customer/send-verify-code",
+        VERIFYMAIL: "/auth/customer/verify-email"
+
     },
 
     // Customer endpoints
