@@ -1,6 +1,6 @@
 import { API_ENDPOINTS } from "@/apis/api.config"
 import ApiResponse, { post } from "@/apis/apiUtils"
-import axios from "axios"
+
 
 // Types
 export type LoginRequest = {
@@ -19,10 +19,8 @@ export type RegisterRequest = {
     email: string
 }
 
-export type LoginResult = {
-    token: string
-    expiration: string
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type LoginResult = any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RegisterResult = any
@@ -58,30 +56,14 @@ class AuthService {
      */
     async register(userData: RegisterRequest): Promise<ApiResponse<RegisterResult>> {
         try {
-            console.log("Registering user with endpoint:", API_ENDPOINTS.AUTH.REGISTER)
-            console.log("Registration data:", userData)
 
             return await post<RegisterResult>(API_ENDPOINTS.AUTH.REGISTER, userData)
-
         } catch (error) {
             console.error("Error during registration:", error)
-            // Check if the error has the expected format
-            if (axios.isAxiosError(error) && error.response?.data?.error) {
-                // Extract the error message from the API response
-                const apiError = error.response.data as ApiErrorResponse
-                console.log("API error:", apiError)
-
-                // Create a new error with the API error message
-                const enhancedError = new Error(apiError.error.message)
-                // Attach the original error data for reference
-                Object.assign(enhancedError, { error: apiError.error })
-                throw enhancedError
-            }
+            // If we couldn't extract a specific message, throw the original error
             throw error
         }
     }
-
-
 }
 
 // Create and export a singleton instance

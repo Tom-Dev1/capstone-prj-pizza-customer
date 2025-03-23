@@ -1,5 +1,3 @@
-"use client"
-
 import { Facebook, Instagram, Twitter } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -9,7 +7,7 @@ export default function Footer() {
             <div className="container mx-auto px-4">
                 <div className="grid md:grid-cols-4 gap-8">
                     <div>
-                        <h3 className="text-xl font-bold mb-4">PizzaDelight</h3>
+                        <h3 className="text-xl font-bold mb-4">PizzaCapstone</h3>
                         <p className="text-gray-400 mb-4">
                             Serving authentic Italian pizza with the freshest ingredients since 2010.
                         </p>
@@ -81,7 +79,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-                    <p>&copy; {new Date().getFullYear()} PizzaDelight. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} PizzaCapstone. All rights reserved.</p>
                 </div>
             </div>
         </footer>

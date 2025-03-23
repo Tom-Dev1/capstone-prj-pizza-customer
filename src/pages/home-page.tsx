@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -22,6 +20,8 @@ gsap.registerPlugin(ScrollTrigger)
 function HomePage() {
     const containerRef = useRef<HTMLDivElement>(null)
 
+
+
     useEffect(() => {
         // Initialize AOS
         AOS.init({
@@ -34,16 +34,24 @@ function HomePage() {
         // Initialize ScrollTrigger
         ScrollTrigger.refresh()
 
+        // Add a small delay to ensure all elements are properly rendered
+        const refreshTimer = setTimeout(() => {
+            ScrollTrigger.refresh(true)
+        }, 200)
+
         return () => {
             // Clean up ScrollTrigger on component unmount
             ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+            clearTimeout(refreshTimer)
         }
     }, [])
 
     return (
-        <main ref={containerRef} className="relative">
+        <main ref={containerRef} className="relative overflow-x-hidden">
             <Header />
-            <Hero />
+            <div className="st">
+                <Hero />
+            </div>
             <Features />
             <Menu />
             <ProcessSection />

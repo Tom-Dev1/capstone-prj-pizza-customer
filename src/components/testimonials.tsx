@@ -45,7 +45,7 @@ export default function Testimonials() {
             role: "Regular Customer",
             image: "/placeholder.svg?height=100&width=100",
             quote:
-                "I order from PizzaDelight at least once a week. Their delivery is always on time and the pizza is still hot!",
+                "I order from PizzaCapstone at least once a week. Their delivery is always on time and the pizza is still hot!",
             rating: 5,
         },
         {
@@ -53,7 +53,7 @@ export default function Testimonials() {
             role: "Food Critic",
             image: "/placeholder.svg?height=100&width=100",
             quote:
-                "The attention to detail and quality of ingredients sets PizzaDelight apart from other pizzerias in the city.",
+                "The attention to detail and quality of ingredients sets PizzaCapstone apart from other pizzerias in the city.",
             rating: 4,
         },
     ]

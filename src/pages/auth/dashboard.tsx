@@ -5,28 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 
 export default function CustomerDashboard() {
-    const { user, logout } = useAuth()
+    const { user } = useAuth()
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow">
-                <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold text-primary">PizzaDelight</h1>
-                        <p className="text-gray-600">Customer Dashboard</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="text-gray-700">Welcome, {user?.name}</span>
-                        <Button
-                            variant="outline"
-                            onClick={logout}
-                            className="border-primary text-primary hover:bg-primary hover:text-white"
-                        >
-                            Logout
-                        </Button>
-                    </div>
-                </div>
-            </header>
+
 
             <main className="container mx-auto px-4 py-8">
                 <div className="bg-white rounded-lg shadow p-6 mb-6">

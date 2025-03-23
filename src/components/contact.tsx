@@ -96,7 +96,7 @@ export default function Contact() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-lg mb-1">Email Address</h3>
-                                    <p className="text-gray-600">info@pizzadelight.com</p>
+                                    <p className="text-gray-600">info@pizzaCapstone.com</p>
                                 </div>
                             </div>
 

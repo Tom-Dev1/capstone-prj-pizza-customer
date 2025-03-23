@@ -2,30 +2,56 @@ import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { gsap } from "gsap"
 import { Utensils, Award, Clock, Leaf } from "lucide-react"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Features() {
-    const sectionRef = useRef<HTMLDivElement>(null)
+
+    const sectionRef = useRef<HTMLElement>(null)
+    const featureRefs = useRef<(HTMLDivElement | null)[]>([])
 
     useEffect(() => {
         if (sectionRef.current) {
-            const features = sectionRef.current.querySelectorAll(".feature-item")
-
+            // Create animation for the section sliding up
             gsap.fromTo(
-                features,
-                { y: 100, opacity: 0 },
+                sectionRef.current,
+                {
+                    y: "20%",
+                },
                 {
                     y: 0,
-                    opacity: 1,
-                    stagger: 0.2,
-                    duration: 0.8,
-                    ease: "power2.out",
                     scrollTrigger: {
                         trigger: sectionRef.current,
-                        start: "top 80%",
-                        toggleActions: "play none none none",
+                        start: "top bottom", // Start animation when the top of the section hits the bottom of the viewport
+                        end: "top center", // End animation when the top of the section hits the center of the viewport
+                        scrub: 1,
                     },
                 },
             )
+
+            // Animate each feature card
+            featureRefs.current.forEach((ref, index) => {
+                if (ref) {
+                    gsap.fromTo(
+                        ref,
+                        {
+                            opacity: 0,
+                            y: 50,
+                        },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.5,
+                            delay: 0.1 * index,
+                            scrollTrigger: {
+                                trigger: ref,
+                                start: "top bottom-=100",
+                                toggleActions: "play none none reverse",
+                            },
+                        },
+                    )
+                }
+            })
         }
     }, [])
 

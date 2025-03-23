@@ -5,15 +5,16 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
-import { authService, type LoginRequest } from "@/services"
+import { authService, type LoginRequest, type ApiErrorResponse } from "@/services"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { motion } from "framer-motion"
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [errorMessage, setErrorMessage] = useState<ApiErrorResponse | null>(null)
+
     const navigate = useNavigate()
     const location = useLocation()
     const { login } = useAuth()
@@ -26,102 +27,111 @@ export default function LoginPage() {
 
     const onSubmit = async (data: LoginRequest) => {
         setIsLoading(true)
-        setError(null)
+        setErrorMessage(null)
 
         try {
             // Use the auth service to login
             const response = await authService.login(data)
 
             if (!response.success) {
-                throw new Error(response.message || "Login failed")
+                throw setErrorMessage(response.result.axiosError as ApiErrorResponse)
             }
 
-            // Extract token and expiration from response
             const { token, expiration } = response.result
 
-            // Update auth context with token data
             login({ token, expiration })
 
-            // Redirect to the page the user was trying to access, or dashboard
             const from = location.state?.from?.pathname || "/customer/dashboard"
-            console.log("Redirecting to:", from) // Add this for debugging
+            console.log("Redirecting to:", from)
             navigate(from, { replace: true })
         } catch (error) {
             console.error("Login failed:", error)
-            setError(error instanceof Error ? error.message : "Invalid username or password. Please try again.")
+            throw error
+            // Check if the error matches the ApiErrorResponse structure
         } finally {
             setIsLoading(false)
         }
     }
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center">
-                <h1 className="text-3xl font-bold">Welcome Back</h1>
-                <p className="text-gray-500">Enter your credentials to access your account</p>
+        <div>
+            <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold">Welcome Back</h2>
+                <p className="text-gray-600 mt-2">Enter your credentials to log in</p>
             </div>
 
-            {error && <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+            {/* Display the error according to the ApiErrorResponse structure */}
+            {errorMessage && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6"
+                >
+                    <p>{errorMessage.error.message}</p>
+                </motion.div>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="text">Email</Label>
-                    <Input
-                        id="text"
+                <div>
+                    <Label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">
+                        Username*
+                    </Label>
+                    <input
+                        id="userName"
                         type="text"
-                        placeholder="your@email.com"
-                        {...register("userName", { required: "Email is required" })}
-                        aria-invalid={errors.userName ? "true" : "false"}
+                        placeholder="Enter your username"
+                        {...register("userName", { required: "Username is required" })}
+                        className="w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0  border-gray-300 focus:border-green-300 focus:ring-green-200"
                     />
-                    {errors && (
-                        <p className="text-red-500 text-sm" role="alert">
-                            {errors.password?.message}
-                        </p>
-                    )}
+                    {errors.userName && <p className="mt-1 text-sm text-red-600">{errors.userName.message}</p>}
                 </div>
-                <div className="space-y-2">
-                    <div className="flex justify-between">
-                        <Label htmlFor="password">Password</Label>
+
+                <div>
+                    <div className="flex justify-between items-center mb-1">
+                        <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            Password*
+                        </Label>
                         <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
                             Forgot password?
                         </Link>
                     </div>
                     <div className="relative">
-                        <Input
+                        <input
                             id="password"
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            {...register("password", { required: "Password is required" })}
-                            aria-invalid={errors.password ? "true" : "false"}
+                            {...register("password", {
+                                required: "Password is required",
+                            })}
+                            className="w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0  border-gray-300 focus:border-green-300 focus:ring-green-200"
                         />
                         <button
                             type="button"
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                             onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
                         >
-                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
                         </button>
                     </div>
-                    {errors.password && (
-                        <p className="text-red-500 text-sm" role="alert">
-                            {errors.password?.message}
-                        </p>
-                    )}
                 </div>
 
-                <Button type="submit" className="w-full bg-primary" disabled={isLoading}>
+                <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 mt-6"
+                >
                     {isLoading ? "Logging in..." : "Log in"}
                 </Button>
-            </form>
 
-            <div className="text-center">
-                <p className="text-sm text-gray-500">
-                    Don't have an account?{" "}
-                    <Link to="/auth/register" className="text-primary hover:underline">
-                        Sign up
-                    </Link>
-                </p>
-            </div>
+                <div className="text-center mt-4">
+                    <p className="text-sm text-gray-600">
+                        Don't have an account?{" "}
+                        <Link to="/auth/register" className="font-medium text-primary hover:text-primary/80">
+                            Sign up
+                        </Link>
+                    </p>
+                </div>
+            </form>
         </div>
     )
 }

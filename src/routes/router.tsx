@@ -6,6 +6,7 @@ import RegisterPage from "@/pages/auth/RegisterPage"
 import CustomerDashboard from "@/pages/auth/dashboard"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { GuestRoute } from "./GuestRoute"
+import UserLayout from "@/layouts/UserLayout"
 
 
 
@@ -15,6 +16,8 @@ const routes: RouteObject[] = [
         // Public route - accessible to everyone
         path: "/",
         element: <HomePage />,
+
+
     },
     {
         // Guest routes - only accessible when NOT logged in
@@ -24,9 +27,11 @@ const routes: RouteObject[] = [
             {
                 path: "login",
                 element: (
+
                     <GuestRoute>
                         <LoginPage />
                     </GuestRoute>
+
                 ),
             },
             {
@@ -46,9 +51,13 @@ const routes: RouteObject[] = [
             {
                 path: "dashboard",
                 element: (
-                    <ProtectedRoute>
-                        <CustomerDashboard />
-                    </ProtectedRoute>
+                    <UserLayout>
+
+
+                        <ProtectedRoute>
+                            <CustomerDashboard />
+                        </ProtectedRoute>
+                    </UserLayout>
                 ),
             },
             // Add more customer routes here
@@ -78,7 +87,7 @@ const routes: RouteObject[] = [
             },
         ],
     },
-    // Catch-all route for 404
+
     {
         path: "*",
         element: <div>Page Not Found</div>,

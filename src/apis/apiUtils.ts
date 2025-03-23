@@ -6,6 +6,7 @@ export default interface ApiResponse<T> {
     result: T
     message: string
     statusCode: number
+
 }
 
 export const get = async <T>(url: string, params?: object)
@@ -24,8 +25,7 @@ export const get = async <T>(url: string, params?: object)
     }
 }
 
-export const post = async <T>(url: string, data: object)
-    : Promise<ApiResponse<T>> => {
+export const post = async <T>(url: string, data: object): Promise<ApiResponse<T>> => {
     try {
         const response: AxiosResponse<ApiResponse<T>> = await api.post(url, data)
         return response.data;
@@ -33,9 +33,10 @@ export const post = async <T>(url: string, data: object)
         const axiosError = error as AxiosError
         return {
             success: false,
-            result: {} as T,
-            message: axiosError.message || 'An unknown error occurred',
-            statusCode: axiosError.response?.status || 500
+            result: { axiosError } as T,
+            message: axiosError.message,
+            statusCode: axiosError.response?.status || 500,
+
         };
     }
 }
