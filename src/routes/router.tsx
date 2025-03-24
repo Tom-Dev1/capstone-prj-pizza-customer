@@ -11,6 +11,10 @@ import CustomerSetting from "@/pages/customer/setting"
 import VerifyPage from "@/pages/auth/verify-page"
 import AuthVerificationCheck from "@/components/auth-verification-check"
 import { ProtectedRoute } from "./ProtectedRoute"
+import CustomerWorkshops from "@/pages/customer/workshop"
+import GuestWorkshop from "@/pages/public-workshops"
+import Booking from "@/pages/booking"
+import GuestLayout from "@/layouts/GuestLayout"
 
 
 
@@ -23,6 +27,22 @@ const routes: RouteObject[] = [
         element: <HomePage />,
 
 
+    },
+    {
+        path: 'workshop',
+        element: (
+            <GuestLayout>
+                < GuestWorkshop />
+            </GuestLayout>
+        )
+    },
+    {
+        path: 'booking',
+        element: (
+            <GuestLayout>
+                <Booking />
+            </GuestLayout>
+        )
     },
     {
         // Guest routes - only accessible when NOT logged in
@@ -60,7 +80,10 @@ const routes: RouteObject[] = [
                 ),
             },
         ],
+
+
     },
+
     {
         // Protected routes - only accessible when logged in
         path: "/customer",
@@ -98,7 +121,7 @@ const routes: RouteObject[] = [
                 path: "workshops",
                 element: (
 
-                    <div>Workshops Page (To be implemented)</div>
+                    <CustomerWorkshops />
 
                 ),
             },

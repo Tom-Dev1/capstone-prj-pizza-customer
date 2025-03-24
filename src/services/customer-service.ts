@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from "@/apis/api.config"
 import ApiResponse, { get } from "@/apis/apiUtils"
 export type CustomerProfile = {
     id: string
@@ -14,7 +15,7 @@ export type CustomerProfile = {
 class CustomerService {
     async getCustomerId(id: string): Promise<ApiResponse<CustomerProfile>> {
         try {
-            return await get<CustomerProfile>(`/customers/${id}`)
+            return await get<CustomerProfile>(API_ENDPOINTS.CUSTOMER.PROFILE(id))
         } catch (error) {
             console.error("Error fetching customer profile:", error)
             throw error

@@ -85,8 +85,7 @@ export default function Header() {
             { name: "Features", href: "/#features" },
             { name: "Menu", href: "/#menu" },
             { name: "Process", href: "/#process" },
-            { name: "Workshop", href: "/#workshop" },
-            { name: "Testimonials", href: "/#testimonials" },
+            { name: "Workshop", href: "/workshop" },
             { name: "Contact", href: "/#contact" },
         ]
 
@@ -193,8 +192,8 @@ export default function Header() {
                                     </DropdownMenu>
                                 </div>
                             ) : (
-                                <Link to="/auth/login">
-                                    <Button className="bg-primary text-white hover:bg-primary/90">Order Now</Button>
+                                <Link to="/booking">
+                                    <Button className="bg-primary text-white hover:bg-primary/90">Booking Now</Button>
                                 </Link>
                             )}
                         </div>

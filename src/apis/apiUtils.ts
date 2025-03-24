@@ -25,9 +25,10 @@ export const get = async <T>(url: string, params?: object)
     }
 }
 
-export const post = async <T>(url: string, data: object): Promise<ApiResponse<T>> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const post = async <T>(url: string, data: object, config?: any): Promise<ApiResponse<T>> => {
     try {
-        const response: AxiosResponse<ApiResponse<T>> = await api.post(url, data)
+        const response: AxiosResponse<ApiResponse<T>> = await api.post(url, data, config)
         return response.data;
     } catch (error) {
         const axiosError = error as AxiosError

@@ -1,8 +1,3 @@
-/**
- * API Configuration
- * Contains all API-related configuration settings
- */
-
 // API Endpoints
 export const API_ENDPOINTS = {
     // Auth endpoints
@@ -16,40 +11,40 @@ export const API_ENDPOINTS = {
 
     // Customer endpoints
     CUSTOMER: {
-        PROFILE: "/customer/profile",
-        UPDATE_PROFILE: "/customer/profile",
-        CHANGE_PASSWORD: "/customer/change-password",
+        PROFILE: (id: string) => `/customers/${id}`,
+        // UPDATE_PROFILE: "/customer/profile",
+        // CHANGE_PASSWORD: "/customer/change-password",
     },
 
     // Order endpoints
-    ORDER: {
-        LIST: "/orders",
-        DETAILS: (id: string) => `/orders/${id}`,
-        CREATE: "/orders",
-        UPDATE: (id: string) => `/orders/${id}`,
-        CANCEL: (id: string) => `/orders/${id}/cancel`,
-    },
+    // ORDER: {
+    //     LIST: "/orders",
+    //     DETAILS: (id: string) => `/orders/${id}`,
+    //     CREATE: "/orders",
+    //     UPDATE: (id: string) => `/orders/${id}`,
+    //     CANCEL: (id: string) => `/orders/${id}/cancel`,
+    // },
 
     // Product endpoints
     PRODUCT: {
-        LIST: "/products",
-        DETAILS: (id: string) => `/products/${id}`,
+        P_LIST: "/products?IncludeProperties=Options.OptionItems",
+        P_DETAILS: (id: string) => `/products/${id}?includeProperties=Options.OptionItems`,
         FEATURED: "/products/featured",
         CATEGORIES: "/product-categories",
     },
 
     // Workshop endpoints
     WORKSHOP: {
-        LIST: "/workshops",
-        DETAILS: (id: string) => `/workshops/${id}`,
-        BOOK: "/workshop-bookings",
-        MY_BOOKINGS: "/workshop-bookings/my",
+        GET_WORKSHOP: "/workshops?IncludeProperties=WorkshopFoodDetails",
+        DETAILS: (id: string) => `/workshops/${id}?includeProperties=WorkshopFoodDetails`,
+        WORKSHOP_REGISTER: "/workshop-register",
+        MY_BOOKINGS: "/workshop-bookings",
     },
 
-    // Categories endpoints
-    CATEGORIES: {
-        LIST: "/categories",
-    },
+    // // Categories endpoints
+    // CATEGORIES: {
+    //     LIST: "/categories",
+    // },
 }
 
 // HTTP Status Codes
