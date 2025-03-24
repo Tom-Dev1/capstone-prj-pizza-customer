@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, AlertCircle, Check } from 'lucide-react'
-import { toast } from "react-toastify"
+import { toast, ToastContainer } from "react-toastify"
 
 interface WorkshopRegistrationFormProps {
     workshop: Workshop
@@ -162,7 +162,14 @@ export default function WorkshopRegistrationForm({
 
             if (response.success) {
                 setSuccess("Workshop registration successful!")
-                toast.success("You have successfully registered for the workshop!")
+                toast.success("You have successfully registered for the workshop!", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                })
 
                 // Close dialog after a short delay
                 setTimeout(() => {
@@ -181,6 +188,7 @@ export default function WorkshopRegistrationForm({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
+            <ToastContainer />
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Register for Workshop</DialogTitle>

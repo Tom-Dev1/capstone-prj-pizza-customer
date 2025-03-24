@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { motion } from "framer-motion"
+import { toast } from "react-toastify"
 
 export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false)
@@ -107,14 +108,29 @@ export default function RegisterPage() {
                 console.log("dang ky khong thanh cong")
                 throw setErrorMessage(response.result.axiosError as ApiErrorResponse)
             }
-            alert("Registration successful! Please login.")
+
+            toast.success("Registration successful! Please login.", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            })
             navigate("/auth/login")
         } catch (error) {
 
 
             console.log("ERROR Catch", error)
 
-            alert('Register errror')
+            toast.error("Registration error ! Please try again.", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            })
 
             throw error
 
