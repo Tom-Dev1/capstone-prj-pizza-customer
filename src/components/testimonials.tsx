@@ -4,6 +4,9 @@ import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { gsap } from "gsap"
 import { Star } from "lucide-react"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Testimonials() {
     const sectionRef = useRef<HTMLDivElement>(null)
@@ -14,17 +17,17 @@ export default function Testimonials() {
 
             gsap.fromTo(
                 testimonials,
-                { y: 50, opacity: 0 },
+                { y: 30, opacity: 0 },
                 {
                     y: 0,
                     opacity: 1,
-                    stagger: 0.3,
-                    duration: 0.8,
+                    stagger: 0.2,
+                    duration: 0.6,
                     ease: "power2.out",
                     scrollTrigger: {
                         trigger: sectionRef.current,
-                        start: "top 80%",
-                        toggleActions: "play none none none",
+                        start: "top 75%",
+                        toggleActions: "play none none reverse",
                     },
                 },
             )
@@ -33,88 +36,86 @@ export default function Testimonials() {
 
     const testimonials = [
         {
-            name: "Sarah Johnson",
-            role: "Food Blogger",
+            name: "Nguyễn Thị Hương",
+            role: "Blogger Ẩm Thực",
             image: "/placeholder.svg?height=100&width=100",
-            quote:
-                "The best pizza I've had outside of Italy. The crust is perfectly crispy and the toppings are always fresh!",
+            quote: "Pizza ngon nhất mà tôi từng ăn ngoài Ý. Lớp vỏ giòn hoàn hảo và các loại nhân luôn tươi ngon!",
             rating: 5,
         },
         {
-            name: "Michael Chen",
-            role: "Regular Customer",
+            name: "Trần Minh Tuấn",
+            role: "Khách Hàng Thường Xuyên",
             image: "/placeholder.svg?height=100&width=100",
-            quote:
-                "I order from PizzaCapstone at least once a week. Their delivery is always on time and the pizza is still hot!",
+            quote: "Tôi đặt pizza từ PizzaCapstone ít nhất một lần mỗi tuần. Giao hàng luôn đúng giờ và pizza vẫn còn nóng!",
             rating: 5,
         },
         {
-            name: "Emily Rodriguez",
-            role: "Food Critic",
+            name: "Lê Thị Phương",
+            role: "Nhà Phê Bình Ẩm Thực",
             image: "/placeholder.svg?height=100&width=100",
             quote:
-                "The attention to detail and quality of ingredients sets PizzaCapstone apart from other pizzerias in the city.",
+                "Sự chú ý đến từng chi tiết và chất lượng nguyên liệu làm nên sự khác biệt của PizzaCapstone so với các tiệm pizza khác trong thành phố.",
             rating: 4,
         },
     ]
 
     return (
-        <section id="testimonials" ref={sectionRef} className="py-20 bg-gray-50">
+        <section id="testimonials" ref={sectionRef} className="bg-gray-50 py-12 md:py-20">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
+                <div className="text-center mb-8 md:mb-12">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-4xl font-bold mb-4"
+                        className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4"
                     >
-                        What Our Customers Say
+                        Khách Hàng Nói Gì
                     </motion.h2>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="w-20 h-1 bg-primary mx-auto mb-6"
+                        className="section-divider"
                     ></motion.div>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
                         viewport={{ once: true }}
-                        className="text-gray-600 max-w-2xl mx-auto"
+                        className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base"
                     >
-                        Don't just take our word for it. Here's what our satisfied customers have to say about our pizzas.
+                        Đừng chỉ tin lời chúng tôi. Đây là những gì khách hàng hài lòng nói về pizza của chúng tôi.
                     </motion.p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
                     {testimonials.map((testimonial, index) => (
-                        <div key={index} className="testimonial-item bg-white p-8 rounded-lg shadow-md">
-                            <div className="flex items-center mb-4">
-                                <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
+                        <div key={index} className="testimonial-item card p-4 md:p-6 lg:p-8">
+                            <div className="flex items-center mb-3 md:mb-4">
+                                <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden mr-3 md:mr-4 border-2 border-primary/20">
                                     <img
                                         src={testimonial.image || "/placeholder.svg"}
                                         alt={testimonial.name}
-                                        className="object-cover fill"
+                                        className="object-cover w-full h-full"
                                     />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">{testimonial.name}</h3>
-                                    <p className="text-gray-600 text-sm">{testimonial.role}</p>
+                                    <h3 className="font-semibold text-base md:text-lg">{testimonial.name}</h3>
+                                    <p className="text-gray-600 text-xs md:text-sm">{testimonial.role}</p>
                                 </div>
                             </div>
-                            <div className="flex mb-4">
+                            <div className="flex mb-3 md:mb-4">
                                 {[...Array(5)].map((_, i) => (
                                     <Star
                                         key={i}
-                                        className={`w-5 h-5 ${i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                                        className={`w-4 h-4 md:w-5 md:h-5 ${i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
                                             }`}
                                     />
                                 ))}
                             </div>
-                            <p className="text-gray-700 italic">"{testimonial.quote}"</p>
+                            <p className="text-gray-700 italic text-sm md:text-base">{testimonial.quote}</p>
                         </div>
                     ))}
                 </div>

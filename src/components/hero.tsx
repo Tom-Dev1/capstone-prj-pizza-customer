@@ -27,7 +27,7 @@ export default function Hero() {
     return (
         <section id="home" ref={sectionRef} className="min-h-screen pt-20 flex items-center relative overflow-hidden">
             <div
-                className="absolute inset-0 z-0 bg-cover bg-center"
+                className="absolute inset-0 z-0 bg-cover bg-center bg-fixed"
                 style={{
                     backgroundImage: "url('https://placehold.co/1920x1080')",
                     filter: "brightness(0.4)",

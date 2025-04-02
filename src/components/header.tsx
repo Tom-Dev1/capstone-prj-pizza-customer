@@ -1,13 +1,9 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, User, LogOut, Settings, CreditCard } from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     DropdownMenu,
@@ -17,6 +13,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/contexts/AuthContext"
+import { Link } from "react-router-dom"
 
 export default function Header() {
     const [scrolled, setScrolled] = useState(false)
@@ -24,13 +22,10 @@ export default function Header() {
     const [lastScrollY, setLastScrollY] = useState(0)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const { isAuthenticated, user, logout } = useAuth()
-    const location = useLocation()
+    const pathname = window.location.pathname;
 
-    // Check if current route is home page - handle both "/" and base URL
-    const isHomePage =
-        location.pathname === "/" ||
-        location.pathname === "/index.html" ||
-        location.pathname.match(/^\/(index\.html)?(\?.*)?$/)
+    // Check if current route is home page
+    const isHomePage = pathname === "/"
 
     useEffect(() => {
         const controlHeader = () => {
@@ -81,19 +76,16 @@ export default function Header() {
     // Define navigation items based on authentication status
     const getNavItems = () => {
         const items = [
-            { name: "Home", href: "/" },
-            { name: "Features", href: "/#features" },
-            { name: "Menu", href: "/#menu" },
-            { name: "Process", href: "/#process" },
+            { name: "Trang chủ", href: "/" },
+            { name: "Thực đơn", href: "/#menu" },
             { name: "Workshop", href: "/workshop" },
-            { name: "Contact", href: "/#contact" },
         ]
 
         // Add auth-specific items
         if (isAuthenticated) {
-            items.push({ name: "Dashboard", href: "/customer/dashboard" })
+            items.push({ name: "Bảng điều khiển", href: "/customer/dashboard" })
         } else {
-            items.push({ name: "Login", href: "/auth/login" })
+            items.push({ name: "Đăng nhập", href: "/auth/login" })
         }
 
         return items
@@ -106,11 +98,12 @@ export default function Header() {
         if (!user?.name) return "U"
         return user.name
             .split(" ")
-            .map((part) => part[0])
+            .map((part: string) => part[0])
             .join("")
             .toUpperCase()
             .substring(0, 2)
     }
+
     return (
         <AnimatePresence>
             {visible && (
@@ -124,19 +117,19 @@ export default function Header() {
                     exit={{ y: -100 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                        <Link to="/" className="text-2xl font-bold text-primary">
+                    <div className="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+                        <Link to="/" className="text-xl md:text-2xl font-bold text-primary">
                             PizzaCapstone
                         </Link>
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex space-x-8">
+                        <nav className="hidden md:flex space-x-4 lg:space-x-8">
                             {navItems.map((item) => (
                                 <Link
                                     key={item.name}
                                     to={item.href}
                                     className={cn(
-                                        "font-medium transition-colors hover:text-primary",
+                                        "font-medium transition-colors hover:text-primary text-sm lg:text-base",
                                         isHomePage && !scrolled ? "text-white" : "text-gray-800",
                                     )}
                                 >
@@ -148,52 +141,59 @@ export default function Header() {
                         {/* Order Button or User Menu */}
                         <div className="hidden md:block">
                             {isAuthenticated ? (
-                                <div className="flex items-center gap-4">
-                                    <span className={cn("font-medium", isHomePage && !scrolled ? "text-white" : "text-gray-800")}>
+                                <div className="flex items-center gap-2 md:gap-4">
+                                    <span
+                                        className={cn(
+                                            "font-medium text-sm lg:text-base",
+                                            isHomePage && !scrolled ? "text-white" : "text-gray-800",
+                                        )}
+                                    >
                                         {user?.name}
                                     </span>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Avatar className="h-10 w-10 cursor-pointer border-2 border-primary relative z-10">
+                                            <Avatar className="h-8 w-8 md:h-10 md:w-10 cursor-pointer border-2 border-primary relative z-10">
                                                 <AvatarImage
                                                     src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
-                                                    alt={user?.name || "User"}
+                                                    alt={user?.name || "Người dùng"}
                                                 />
                                                 <AvatarFallback className="bg-primary text-white">{getUserInitials()}</AvatarFallback>
                                             </Avatar>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-56 z-50" sideOffset={5} alignOffset={0}>
-                                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                            <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild>
                                                 <Link to="/customer/dashboard" className="flex w-full cursor-pointer items-center">
                                                     <User className="mr-2 h-4 w-4" />
-                                                    <span>Profile</span>
+                                                    <span>Hồ sơ</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link to="/customer/orders" className="flex w-full cursor-pointer items-center">
                                                     <CreditCard className="mr-2 h-4 w-4" />
-                                                    <span>My Orders</span>
+                                                    <span>Đơn hàng của tôi</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link to="/customer/settings" className="flex w-full cursor-pointer items-center">
                                                     <Settings className="mr-2 h-4 w-4" />
-                                                    <span>Settings</span>
+                                                    <span>Cài đặt</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500 cursor-pointer">
                                                 <LogOut className="mr-2 h-4 w-4" />
-                                                <span>Log Out</span>
+                                                <span>Đăng xuất</span>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
                             ) : (
                                 <Link to="/booking">
-                                    <Button className="bg-primary text-white hover:bg-primary/90">Booking Now</Button>
+                                    <Button className="bg-primary text-white hover:bg-primary/90 text-sm lg:text-base py-2 px-4 md:px-6">
+                                        Đặt bàn ngay
+                                    </Button>
                                 </Link>
                             )}
                         </div>
@@ -203,29 +203,29 @@ export default function Header() {
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="md:hidden p-0 h-auto w-auto">
                                     <Menu className={isHomePage && !scrolled ? "text-white" : "text-gray-800"} size={24} />
-                                    <span className="sr-only">Toggle menu</span>
+                                    <span className="sr-only">Mở menu</span>
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="right" className="w-[80%] sm:w-[350px] p-0">
                                 <div className="flex flex-col h-full">
-                                    <div className="p-6 border-b">
+                                    <div className="p-4 md:p-6 border-b">
                                         <div className="flex items-center justify-between mb-4">
-                                            <Link to="/" className="text-2xl font-bold text-primary">
+                                            <Link to="/" className="text-xl md:text-2xl font-bold text-primary">
                                                 PizzaCapstone
                                             </Link>
                                             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
                                                 <X size={24} />
-                                                <span className="sr-only">Close menu</span>
+                                                <span className="sr-only">Đóng menu</span>
                                             </Button>
                                         </div>
                                     </div>
-                                    <nav className="flex-1 overflow-auto py-6 px-6">
-                                        <ul className="space-y-6">
+                                    <nav className="flex-1 overflow-auto py-4 md:py-6 px-4 md:px-6">
+                                        <ul className="space-y-4 md:space-y-6">
                                             {navItems.map((item) => (
                                                 <li key={item.name}>
                                                     <Link
                                                         to={item.href}
-                                                        className="text-lg font-medium text-gray-800 hover:text-primary transition-colors"
+                                                        className="text-base md:text-lg font-medium text-gray-800 hover:text-primary transition-colors"
                                                         onClick={() => setMobileMenuOpen(false)}
                                                     >
                                                         {item.name}
@@ -234,14 +234,14 @@ export default function Header() {
                                             ))}
                                         </ul>
                                     </nav>
-                                    <div className="p-6 border-t">
+                                    <div className="p-4 md:p-6 border-t">
                                         {isAuthenticated ? (
                                             <div className="space-y-3">
                                                 <div className="flex items-center gap-3 mb-4">
-                                                    <Avatar className="h-12 w-12 border-2 border-primary">
+                                                    <Avatar className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary">
                                                         <AvatarImage
                                                             src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
-                                                            alt={user?.name || "User"}
+                                                            alt={user?.name || "Người dùng"}
                                                         />
                                                         <AvatarFallback className="bg-primary text-white">{getUserInitials()}</AvatarFallback>
                                                     </Avatar>
@@ -250,27 +250,27 @@ export default function Header() {
                                                     </div>
                                                 </div>
                                                 <Link to="/customer/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                                                    <Button className="w-full bg-primary text-white hover:bg-primary/90 mb-2">
+                                                    <Button className="w-full bg-primary text-white hover:bg-primary/90 mb-2 text-sm md:text-base py-2">
                                                         <User className="mr-2 h-4 w-4" />
-                                                        Profile
+                                                        Hồ sơ
                                                     </Button>
                                                 </Link>
                                                 <Link to="/customer/orders" onClick={() => setMobileMenuOpen(false)}>
                                                     <Button
                                                         variant="outline"
-                                                        className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2"
+                                                        className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2"
                                                     >
                                                         <CreditCard className="mr-2 h-4 w-4" />
-                                                        My Orders
+                                                        Đơn hàng của tôi
                                                     </Button>
                                                 </Link>
                                                 <Link to="/customer/settings" onClick={() => setMobileMenuOpen(false)}>
                                                     <Button
                                                         variant="outline"
-                                                        className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2"
+                                                        className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2"
                                                     >
                                                         <Settings className="mr-2 h-4 w-4" />
-                                                        Settings
+                                                        Cài đặt
                                                     </Button>
                                                 </Link>
                                                 <Button
@@ -279,15 +279,17 @@ export default function Header() {
                                                         setMobileMenuOpen(false)
                                                     }}
                                                     variant="outline"
-                                                    className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                                    className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-sm md:text-base py-2"
                                                 >
                                                     <LogOut className="mr-2 h-4 w-4" />
-                                                    Log Out
+                                                    Đăng xuất
                                                 </Button>
                                             </div>
                                         ) : (
                                             <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                                                <Button className="w-full bg-primary text-white hover:bg-primary/90">Sign In</Button>
+                                                <Button className="w-full bg-primary text-white hover:bg-primary/90 text-sm md:text-base py-2">
+                                                    Đăng nhập
+                                                </Button>
                                             </Link>
                                         )}
                                     </div>

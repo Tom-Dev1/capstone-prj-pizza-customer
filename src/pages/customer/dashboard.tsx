@@ -9,11 +9,7 @@ export default function CustomerDashboard() {
     console.log(user?.CustomerId);
 
     return (
-
-
         <div className="">
-
-
             <main className="container mx-auto px-4 py-8">
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
                     <h2 className="text-xl font-semibold mb-4">Account Information</h2>
