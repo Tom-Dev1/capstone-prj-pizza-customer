@@ -1,68 +1,31 @@
 import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
 
 export default function Menu() {
     const sectionRef = useRef<HTMLDivElement>(null)
 
+    // Use Intersection Observer for more efficient animations
     useEffect(() => {
-        if (sectionRef.current) {
-            // Clear any existing animations
-            ScrollTrigger.getAll().forEach((trigger) => {
-                if (trigger.vars.id === "menu-trigger") {
-                    trigger.kill()
+        if (!sectionRef.current) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    const pizzaItems = sectionRef.current?.querySelectorAll(".pizza-item")
+                    pizzaItems?.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.classList.add("animate-fade-in")
+                        }, index * 150) // Stagger the animations
+                    })
+                    observer.disconnect() // Only run once
                 }
-            })
+            },
+            { threshold: 0.1 },
+        )
 
-            // Get all pizza items
-            const pizzaItems = sectionRef.current.querySelectorAll(".pizza-item")
+        observer.observe(sectionRef.current)
 
-            // Set initial state for all items - hidden and offset
-            gsap.set(pizzaItems, {
-                y: 50,
-                opacity: 0,
-                scale: 0.9,
-            })
-
-            // Create a timeline for sequential animation
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    id: "menu-trigger",
-                    trigger: sectionRef.current,
-                    start: "top 70%",
-                    end: "center center",
-                    toggleActions: "play none none reverse",
-                },
-            })
-
-            // Add each pizza item to the timeline with a more pronounced stagger
-            pizzaItems.forEach((item, index) => {
-                tl.to(
-                    item,
-                    {
-                        y: 0,
-                        opacity: 1,
-                        scale: 1,
-                        duration: 0.6,
-                        ease: "back.out(1.7)",
-                        delay: 0.1, // Small delay before starting the animation
-                    },
-                    index * 0.25, // 0.25 seconds between each item for more noticeable sequence
-                )
-            })
-        }
-
-        return () => {
-            // Clean up ScrollTrigger
-            ScrollTrigger.getAll().forEach((trigger) => {
-                if (trigger.vars.id === "menu-trigger") {
-                    trigger.kill()
-                }
-            })
-        }
+        return () => observer.disconnect()
     }, [])
 
     const pizzas = [
@@ -104,32 +67,6 @@ export default function Menu() {
         },
     ]
 
-    // Alternative approach using Framer Motion for sequential animation
-    const container = {
-        hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.2, // Time between each child animation
-                delayChildren: 0.3, // Delay before starting the first child
-            },
-        },
-    }
-
-    const item = {
-        hidden: { y: 50, opacity: 0, scale: 0.9 },
-        show: {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 12,
-            },
-        },
-    }
-
     return (
         <section id="menu" ref={sectionRef} className="bg-white py-12 md:py-20">
             <div className="container mx-auto px-4">
@@ -161,21 +98,19 @@ export default function Menu() {
                     </motion.p>
                 </div>
 
-                {/* Using Framer Motion for sequential animation */}
-                <motion.div
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8"
-                    variants={container}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: false, amount: 0.2 }}
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
                     {pizzas.map((pizza, index) => (
-                        <motion.div key={index} className="pizza-item card group" variants={item}>
+                        <div
+                            key={index}
+                            className="pizza-item card group opacity-0"
+                            style={{ transitionDelay: `${index * 100}ms` }}
+                        >
                             <div className="relative h-40 sm:h-48 overflow-hidden">
                                 <img
                                     src={pizza.image || "/placeholder.svg"}
                                     alt={pizza.name}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    loading="lazy" // Add native lazy loading
                                 />
                             </div>
                             <div className="card-body p-4 md:p-6">
@@ -186,9 +121,9 @@ export default function Menu() {
                                 <p className="text-gray-600 mb-3 md:mb-4 text-xs md:text-sm">{pizza.description}</p>
                                 <button className="btn-primary w-full py-2 text-sm md:text-base">Thêm vào giỏ hàng</button>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
 
                 <div className="text-center mt-8 md:mt-10 lg:mt-12">
                     <button className="btn-outline py-2 md:py-3 px-6 md:px-8 text-sm md:text-base">Xem Toàn Bộ Thực Đơn</button>

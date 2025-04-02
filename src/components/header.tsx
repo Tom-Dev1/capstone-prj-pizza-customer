@@ -1,20 +1,12 @@
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, User, LogOut, Settings, CreditCard } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { cn } from "../lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
-import { Link } from "react-router-dom"
+
+// Giả lập context auth cho React
 
 export default function Header() {
     const [scrolled, setScrolled] = useState(false)
@@ -22,10 +14,15 @@ export default function Header() {
     const [lastScrollY, setLastScrollY] = useState(0)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const { isAuthenticated, user, logout } = useAuth()
-    const pathname = window.location.pathname;
+    const [pathname, setPathname] = useState("/")
 
     // Check if current route is home page
     const isHomePage = pathname === "/"
+
+    useEffect(() => {
+        // Get current path from window.location
+        setPathname(window.location.pathname)
+    }, [])
 
     useEffect(() => {
         const controlHeader = () => {
@@ -77,8 +74,11 @@ export default function Header() {
     const getNavItems = () => {
         const items = [
             { name: "Trang chủ", href: "/" },
+            { name: "Đặc điểm", href: "/#features" },
             { name: "Thực đơn", href: "/#menu" },
-            { name: "Workshop", href: "/workshop" },
+            { name: "Quy trình", href: "/#process" },
+            { name: "Lớp học", href: "/workshop" },
+            { name: "Liên hệ", href: "/#contact" },
         ]
 
         // Add auth-specific items
@@ -93,15 +93,25 @@ export default function Header() {
 
     const navItems = getNavItems()
 
-    // Get user initials for avatar fallback
-    const getUserInitials = () => {
-        if (!user?.name) return "U"
-        return user.name
-            .split(" ")
-            .map((part: string) => part[0])
-            .join("")
-            .toUpperCase()
-            .substring(0, 2)
+
+
+    // Handle smooth scrolling for anchor links
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        if (href.startsWith("/#")) {
+            e.preventDefault()
+            const targetId = href.substring(2)
+            const targetElement = document.getElementById(targetId)
+
+            // Chỉ scroll khi người dùng thực sự nhấp vào liên kết
+            if (targetElement) {
+                // Thêm một chút delay để đảm bảo UI đã cập nhật
+                setTimeout(() => {
+                    targetElement.scrollIntoView({ behavior: "smooth" })
+                }, 100)
+            }
+
+            setMobileMenuOpen(false)
+        }
     }
 
     return (
@@ -118,23 +128,24 @@ export default function Header() {
                     transition={{ duration: 0.3 }}
                 >
                     <div className="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
-                        <Link to="/" className="text-xl md:text-2xl font-bold text-primary">
+                        <a href="/" className="text-xl md:text-2xl font-bold text-primary">
                             PizzaCapstone
-                        </Link>
+                        </a>
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex space-x-4 lg:space-x-8">
                             {navItems.map((item) => (
-                                <Link
+                                <a
                                     key={item.name}
-                                    to={item.href}
+                                    href={item.href}
+                                    onClick={(e) => handleNavClick(e, item.href)}
                                     className={cn(
                                         "font-medium transition-colors hover:text-primary text-sm lg:text-base",
                                         isHomePage && !scrolled ? "text-white" : "text-gray-800",
                                     )}
                                 >
                                     {item.name}
-                                </Link>
+                                </a>
                             ))}
                         </nav>
 
@@ -150,152 +161,127 @@ export default function Header() {
                                     >
                                         {user?.name}
                                     </span>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Avatar className="h-8 w-8 md:h-10 md:w-10 cursor-pointer border-2 border-primary relative z-10">
-                                                <AvatarImage
-                                                    src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
-                                                    alt={user?.name || "Người dùng"}
-                                                />
-                                                <AvatarFallback className="bg-primary text-white">{getUserInitials()}</AvatarFallback>
-                                            </Avatar>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-56 z-50" sideOffset={5} alignOffset={0}>
-                                            <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem asChild>
-                                                <Link to="/customer/dashboard" className="flex w-full cursor-pointer items-center">
-                                                    <User className="mr-2 h-4 w-4" />
-                                                    <span>Hồ sơ</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link to="/customer/orders" className="flex w-full cursor-pointer items-center">
-                                                    <CreditCard className="mr-2 h-4 w-4" />
-                                                    <span>Đơn hàng của tôi</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link to="/customer/settings" className="flex w-full cursor-pointer items-center">
-                                                    <Settings className="mr-2 h-4 w-4" />
-                                                    <span>Cài đặt</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500 cursor-pointer">
-                                                <LogOut className="mr-2 h-4 w-4" />
-                                                <span>Đăng xuất</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <div className="relative">
+                                        <button
+                                            className="h-8 w-8 md:h-10 md:w-10 cursor-pointer border-2 border-primary rounded-full overflow-hidden relative z-10"
+                                            onClick={() => {
+                                                /* Toggle dropdown */
+                                            }}
+                                        >
+                                            <img
+                                                src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
+                                                alt={user?.name || "Người dùng"}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </button>
+                                        {/* Dropdown menu would go here */}
+                                    </div>
                                 </div>
                             ) : (
-                                <Link to="/booking">
-                                    <Button className="bg-primary text-white hover:bg-primary/90 text-sm lg:text-base py-2 px-4 md:px-6">
+                                <a href="/booking">
+                                    <button className="bg-primary text-white hover:bg-primary/90 text-sm lg:text-base py-2 px-4 md:px-6 rounded-full">
                                         Đặt bàn ngay
-                                    </Button>
-                                </Link>
+                                    </button>
+                                </a>
                             )}
                         </div>
 
-                        {/* Mobile Menu - Using Sheet */}
-                        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="md:hidden p-0 h-auto w-auto">
-                                    <Menu className={isHomePage && !scrolled ? "text-white" : "text-gray-800"} size={24} />
-                                    <span className="sr-only">Mở menu</span>
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="right" className="w-[80%] sm:w-[350px] p-0">
-                                <div className="flex flex-col h-full">
-                                    <div className="p-4 md:p-6 border-b">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <Link to="/" className="text-xl md:text-2xl font-bold text-primary">
-                                                PizzaCapstone
-                                            </Link>
-                                            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
-                                                <X size={24} />
-                                                <span className="sr-only">Đóng menu</span>
-                                            </Button>
+                        {/* Mobile Menu Button */}
+                        <button
+                            className="md:hidden p-0 h-auto w-auto bg-transparent border-none"
+                            onClick={() => setMobileMenuOpen(true)}
+                        >
+                            <Menu className={isHomePage && !scrolled ? "text-white" : "text-gray-800"} size={24} />
+                            <span className="sr-only">Mở menu</span>
+                        </button>
+
+                        {/* Mobile Menu */}
+                        {mobileMenuOpen && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden">
+                                <div className="absolute right-0 top-0 h-full w-[80%] sm:w-[350px] bg-white p-0 shadow-lg">
+                                    <div className="flex flex-col h-full">
+                                        <div className="p-4 md:p-6 border-b">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <a href="/" className="text-xl md:text-2xl font-bold text-primary">
+                                                    PizzaCapstone
+                                                </a>
+                                                <button className="bg-transparent border-none" onClick={() => setMobileMenuOpen(false)}>
+                                                    <X size={24} />
+                                                    <span className="sr-only">Đóng menu</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <nav className="flex-1 overflow-auto py-4 md:py-6 px-4 md:px-6">
+                                            <ul className="space-y-4 md:space-y-6">
+                                                {navItems.map((item) => (
+                                                    <li key={item.name}>
+                                                        <a
+                                                            href={item.href}
+                                                            className="text-base md:text-lg font-medium text-gray-800 hover:text-primary transition-colors"
+                                                            onClick={(e) => handleNavClick(e, item.href)}
+                                                        >
+                                                            {item.name}
+                                                        </a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </nav>
+                                        <div className="p-4 md:p-6 border-t">
+                                            {isAuthenticated ? (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <div className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary rounded-full overflow-hidden">
+                                                            <img
+                                                                src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
+                                                                alt={user?.name || "Người dùng"}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-semibold">{user?.name}</div>
+                                                        </div>
+                                                    </div>
+                                                    <a href="/customer/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                                                        <button className="w-full bg-primary text-white hover:bg-primary/90 mb-2 text-sm md:text-base py-2 rounded-md">
+                                                            <User className="mr-2 h-4 w-4 inline-block" />
+                                                            Hồ sơ
+                                                        </button>
+                                                    </a>
+                                                    <a href="/customer/orders" onClick={() => setMobileMenuOpen(false)}>
+                                                        <button className="w-full border border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2 rounded-md">
+                                                            <CreditCard className="mr-2 h-4 w-4 inline-block" />
+                                                            Đơn hàng của tôi
+                                                        </button>
+                                                    </a>
+                                                    <a href="/customer/settings" onClick={() => setMobileMenuOpen(false)}>
+                                                        <button className="w-full border border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2 rounded-md">
+                                                            <Settings className="mr-2 h-4 w-4 inline-block" />
+                                                            Cài đặt
+                                                        </button>
+                                                    </a>
+                                                    <button
+                                                        onClick={() => {
+                                                            logout()
+                                                            setMobileMenuOpen(false)
+                                                        }}
+                                                        className="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-sm md:text-base py-2 rounded-md"
+                                                    >
+                                                        <LogOut className="mr-2 h-4 w-4 inline-block" />
+                                                        Đăng xuất
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <a href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                                                    <button className="w-full bg-primary text-white hover:bg-primary/90 text-sm md:text-base py-2 rounded-md">
+                                                        Đăng nhập
+                                                    </button>
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
-                                    <nav className="flex-1 overflow-auto py-4 md:py-6 px-4 md:px-6">
-                                        <ul className="space-y-4 md:space-y-6">
-                                            {navItems.map((item) => (
-                                                <li key={item.name}>
-                                                    <Link
-                                                        to={item.href}
-                                                        className="text-base md:text-lg font-medium text-gray-800 hover:text-primary transition-colors"
-                                                        onClick={() => setMobileMenuOpen(false)}
-                                                    >
-                                                        {item.name}
-                                                    </Link>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </nav>
-                                    <div className="p-4 md:p-6 border-t">
-                                        {isAuthenticated ? (
-                                            <div className="space-y-3">
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <Avatar className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary">
-                                                        <AvatarImage
-                                                            src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
-                                                            alt={user?.name || "Người dùng"}
-                                                        />
-                                                        <AvatarFallback className="bg-primary text-white">{getUserInitials()}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <div className="font-semibold">{user?.name}</div>
-                                                    </div>
-                                                </div>
-                                                <Link to="/customer/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                                                    <Button className="w-full bg-primary text-white hover:bg-primary/90 mb-2 text-sm md:text-base py-2">
-                                                        <User className="mr-2 h-4 w-4" />
-                                                        Hồ sơ
-                                                    </Button>
-                                                </Link>
-                                                <Link to="/customer/orders" onClick={() => setMobileMenuOpen(false)}>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2"
-                                                    >
-                                                        <CreditCard className="mr-2 h-4 w-4" />
-                                                        Đơn hàng của tôi
-                                                    </Button>
-                                                </Link>
-                                                <Link to="/customer/settings" onClick={() => setMobileMenuOpen(false)}>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2"
-                                                    >
-                                                        <Settings className="mr-2 h-4 w-4" />
-                                                        Cài đặt
-                                                    </Button>
-                                                </Link>
-                                                <Button
-                                                    onClick={() => {
-                                                        logout()
-                                                        setMobileMenuOpen(false)
-                                                    }}
-                                                    variant="outline"
-                                                    className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-sm md:text-base py-2"
-                                                >
-                                                    <LogOut className="mr-2 h-4 w-4" />
-                                                    Đăng xuất
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                                                <Button className="w-full bg-primary text-white hover:bg-primary/90 text-sm md:text-base py-2">
-                                                    Đăng nhập
-                                                </Button>
-                                            </Link>
-                                        )}
-                                    </div>
                                 </div>
-                            </SheetContent>
-                        </Sheet>
+                            </div>
+                        )}
                     </div>
                 </motion.header>
             )}

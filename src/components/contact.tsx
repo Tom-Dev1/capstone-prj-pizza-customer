@@ -1,17 +1,15 @@
-import type React from "react"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { motion } from "framer-motion"
-import { gsap } from "gsap"
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 
 export default function Contact() {
     const sectionRef = useRef<HTMLDivElement>(null)
     const formRef = useRef<HTMLFormElement>(null)
 
-    useEffect(() => {
+    // Sử dụng useGSAP hook để tạo animation
+    useGSAP(() => {
         if (sectionRef.current && formRef.current) {
             gsap.fromTo(
                 formRef.current,
@@ -25,10 +23,10 @@ export default function Contact() {
                         start: "top 80%",
                         toggleActions: "play none none none",
                     },
-                },
+                }
             )
         }
-    }, [])
+    }, { scope: sectionRef, dependencies: [] }) // Giới hạn phạm vi của GSAP trong section này
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -175,4 +173,3 @@ export default function Contact() {
         </section>
     )
 }
-

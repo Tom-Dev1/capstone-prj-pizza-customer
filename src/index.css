@@ -85,7 +85,7 @@
   h3,
   h4,
   h5,
-  h6 {
+  h5 {
     @apply font-bold tracking-tight;
   }
 
@@ -117,7 +117,8 @@
 
   /* Smooth scrolling for the entire page */
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto; /* Thay đổi từ smooth sang auto để tránh scroll tự động */
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Improve image rendering */
@@ -227,9 +228,8 @@
   }
 }
 
-/* Ensure smooth scrolling works on all browsers */
-html {
+/* Thêm class riêng cho smooth scrolling khi người dùng click */
+.smooth-scroll {
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
 }
 

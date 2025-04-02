@@ -6,6 +6,9 @@ import { ProfileProvider } from "./contexts/ProfileContext"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual"
+}
 function App() {
   return (
     <AuthProvider>

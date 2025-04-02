@@ -1,14 +1,14 @@
-"use client"
-
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { motion } from "framer-motion"
-import { gsap } from "gsap"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
 
 export default function Hero() {
     const sectionRef = useRef<HTMLDivElement>(null)
     const pizzaRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() => {
+    // Sử dụng useGSAP thay cho useEffect
+    useGSAP(() => {
         if (pizzaRef.current) {
             gsap.fromTo(
                 pizzaRef.current,
@@ -19,15 +19,15 @@ export default function Hero() {
                     repeat: -1,
                     yoyo: true,
                     ease: "power1.inOut",
-                },
+                }
             )
         }
-    }, [])
+    }, { scope: sectionRef }) // Giới hạn phạm vi của GSAP trong section này
 
     return (
         <section id="home" ref={sectionRef} className="min-h-screen pt-20 flex items-center relative overflow-hidden">
             <div
-                className="absolute inset-0 z-0 bg-cover bg-center bg-fixed"
+                className="absolute inset-0 z-0 bg-cover bg-center"
                 style={{
                     backgroundImage: "url('https://placehold.co/1920x1080')",
                     filter: "brightness(0.4)",
@@ -80,4 +80,3 @@ export default function Hero() {
         </section>
     )
 }
-

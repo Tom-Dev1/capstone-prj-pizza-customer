@@ -1,56 +1,64 @@
-import { useEffect, useRef } from "react"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-import AOS from "aos"
-import "aos/dist/aos.css"
-
-gsap.registerPlugin(ScrollTrigger)
+import { useRef } from "react"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { useEffect } from "react"
 
 export default function ProcessSection() {
     const sectionRef = useRef<HTMLElement>(null)
 
-    useEffect(() => {
-        // Initialize AOS
-        AOS.init({
-            duration: 500,
-            easing: "ease-out",
-            once: false,
-            mirror: true,
-        })
-
+    // Sử dụng useGSAP hook để tạo animation
+    useGSAP(() => {
+        // Tạo hiệu ứng parallax đơn giản
         if (sectionRef.current) {
-            // Parallax effect for the background using GSAP
-            gsap.to(".parallax-bg", {
-                y: "30%",
-                ease: "none",
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: true,
-                },
+            const parallaxElements = sectionRef.current.querySelectorAll(".parallax-bg")
+            parallaxElements.forEach(element => {
+                gsap.to(element, {
+                    y: "30%",
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: true,
+                    },
+                })
             })
 
-            // Rotate pizza images on scroll using GSAP
-            gsap.to(".rotate-element", {
-                rotation: 360,
-                ease: "none",
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: true,
-                },
+            // Xoay các hình ảnh pizza
+            const rotateElements = sectionRef.current.querySelectorAll(".rotate-element")
+            rotateElements.forEach(element => {
+                gsap.to(element, {
+                    rotation: 360,
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: true,
+                    },
+                })
             })
         }
+    }, { scope: sectionRef, dependencies: [] }) // Giới hạn phạm vi của GSAP trong section này
 
-        // Refresh AOS when the component mounts
-        AOS.refresh()
+    // Khởi tạo AOS
+    useEffect(() => {
+        const initAOS = async () => {
+            const AOS = (await import("aos")).default
+            await import("aos/dist/aos.css")
 
-        return () => {
-            // Clean up ScrollTrigger animations
-            ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+            AOS.init({
+                duration: 500,
+                easing: "ease-out",
+                once: false,
+                mirror: true,
+            })
+
+            // Refresh AOS khi component mount
+            AOS.refresh()
         }
+
+        initAOS()
     }, [])
 
     const processSteps = [
@@ -188,4 +196,3 @@ export default function ProcessSection() {
         </section>
     )
 }
-
