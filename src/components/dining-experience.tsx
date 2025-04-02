@@ -85,7 +85,7 @@ export default function DiningExperience() {
         {
             title: "Khu Vực Chính",
             description: "Không gian rộng rãi với thiết kế hiện đại, phù hợp cho các nhóm bạn bè và gia đình.",
-            image: "/placeholder.svg?height=400&width=600",
+            image: "https://placehold.co/400x600",
             capacity: "60 chỗ ngồi",
             features: ["Bàn lớn", "Bàn nhỏ", "Ghế cao"],
         },
@@ -93,14 +93,14 @@ export default function DiningExperience() {
             title: "Khu Vực Ngoài Trời",
             description:
                 "Không gian ngoài trời thoáng đãng với cây xanh và ánh sáng tự nhiên, lý tưởng cho những ngày đẹp trời.",
-            image: "/placeholder.svg?height=400&width=600",
+            image: "https://placehold.co/400x600",
             capacity: "40 chỗ ngồi",
             features: ["Mái che", "Đèn trang trí", "Cây xanh"],
         },
         {
             title: "Phòng Riêng",
             description: "Không gian riêng tư cho các buổi họp mặt, sinh nhật hoặc sự kiện đặc biệt với dịch vụ chuyên biệt.",
-            image: "/placeholder.svg?height=400&width=600",
+            image: "https://placehold.co/400x600",
             capacity: "20 chỗ ngồi",
             features: ["Âm thanh riêng", "Màn hình", "Phục vụ riêng"],
         },
@@ -323,7 +323,7 @@ export default function DiningExperience() {
                     </div>
                     <div className="relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-lg">
                         <img
-                            src="/placeholder.svg?height=600&width=800"
+                            src="https://placehold.co/600x800"
                             alt="Sự kiện đặc biệt"
                             className="w-full h-full object-cover"
                         />

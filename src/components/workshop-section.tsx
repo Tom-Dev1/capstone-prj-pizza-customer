@@ -447,8 +447,7 @@ export default function WorkshopSection() {
                 </div>
             </div>
 
-            {/* Add a spacer div to ensure proper spacing after the horizontal section */}
-            <div className="h-20"></div>
+
         </section>
     )
 }

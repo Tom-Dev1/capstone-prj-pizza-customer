@@ -30,7 +30,7 @@ export default function Hero() {
             <div
                 className="absolute inset-0 z-0 bg-cover bg-center bg-fixed"
                 style={{
-                    backgroundImage: "url('/placeholder.svg?height=1920&width=1080')",
+                    backgroundImage: "url('https://placehold.co/1920x1080')",
                     filter: "brightness(0.4)",
                 }}
             />
@@ -72,7 +72,7 @@ export default function Hero() {
                         transition={{ duration: 0.8, delay: 0.2 }}
                         className="relative mt-8 md:mt-0 max-w-sm mx-auto md:max-w-none"
                     >
-                        <img src="/placeholder.svg?height=600&width=600" alt="Pizza Ngon" className="rounded-full w-full h-auto" />
+                        <img src="https://placehold.co/600x600" alt="Pizza Ngon" className="rounded-full w-full h-auto" />
                         <div className="absolute top-0 right-0 bg-primary text-white rounded-full p-4 sm:p-6 shadow-lg">
                             <div className="text-center">
                                 <span className="block text-xl sm:text-2xl font-bold">20%</span>

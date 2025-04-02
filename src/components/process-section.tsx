@@ -61,28 +61,28 @@ export default function ProcessSection() {
             title: "Bột Nhào Thủ Công",
             description:
                 "Pizza của chúng tôi bắt đầu với bột nhào thủ công được làm mới hàng ngày. Chúng tôi sử dụng hỗn hợp bột đặc biệt và để lên men trong 24 giờ để tạo ra hương vị và kết cấu hoàn hảo.",
-            image: "/placeholder.svg?height=400&width=400",
+            image: "https://placehold.co/400x400",
         },
         {
             number: "02",
             title: "Sốt Cao Cấp",
             description:
                 "Sốt đặc trưng của chúng tôi được làm từ cà chua San Marzano, nhập khẩu từ Ý và nổi tiếng với hương vị ngọt và độ axit thấp. Chúng tôi thêm hỗn hợp thảo mộc và gia vị để tạo ra hương vị hoàn hảo.",
-            image: "/placeholder.svg?height=400&width=400",
+            image: "https://placehold.co/400x400",
         },
         {
             number: "03",
             title: "Nhân Chất Lượng",
             description:
                 "Chúng tôi chọn lựa những nguyên liệu tốt nhất cho nhân pizza, từ rau củ tươi đến các loại thịt và phô mai cao cấp. Mỗi loại nhân được lựa chọn cẩn thận để đảm bảo sự kết hợp hương vị tốt nhất.",
-            image: "/placeholder.svg?height=400&width=400",
+            image: "https://placehold.co/400x400",
         },
         {
             number: "04",
             title: "Lò Đốt Củi",
             description:
                 "Pizza của chúng tôi được nướng trong lò đốt củi truyền thống ở nhiệt độ lên đến 480°C. Điều này tạo ra lớp vỏ hoàn hảo - giòn bên ngoài và mềm bên trong.",
-            image: "/placeholder.svg?height=400&width=400",
+            image: "https://placehold.co/400x400",
         },
     ]
 
@@ -92,7 +92,7 @@ export default function ProcessSection() {
             <div className="absolute inset-0 parallax-bg opacity-10">
                 <div className="absolute top-0 left-0 w-32 md:w-64 h-32 md:h-64">
                     <img
-                        src="/placeholder.svg?height=200&width=200"
+                        src="https://placehold.co/150x150"
                         alt="Hình ảnh pizza"
                         width={200}
                         height={200}
@@ -101,7 +101,7 @@ export default function ProcessSection() {
                 </div>
                 <div className="absolute bottom-20 right-10 w-24 md:w-48 h-24 md:h-48">
                     <img
-                        src="/placeholder.svg?height=150&width=150"
+                        src="https://placehold.co/150x150"
                         alt="Hình ảnh pizza"
                         width={150}
                         height={150}
@@ -110,7 +110,7 @@ export default function ProcessSection() {
                 </div>
                 <div className="absolute top-40 right-1/4 w-16 md:w-32 h-16 md:h-32">
                     <img
-                        src="/placeholder.svg?height=100&width=100"
+                        src="https://placehold.co/150x150"
                         alt="Hình ảnh pizza"
                         width={100}
                         height={100}
