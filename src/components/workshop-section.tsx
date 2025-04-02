@@ -1,62 +1,118 @@
-import { useState, useRef } from "react"
-import { Calendar, Clock, Users, ChefHat, Award, ArrowRight, Utensils, Star } from "lucide-react"
-import { useGSAP } from "@gsap/react"
-import gsap from "gsap"
-import { ScrollTrigger } from "gsap/all"
+"use client"
 
-// Optimized version with @gsap/react
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
+import { Calendar, Clock, Users, ChefHat, Award, ArrowRight, Utensils, Star } from "lucide-react"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { Button } from "@/components/ui/button"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Link } from "react-router-dom"
+
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger)
+
 export default function WorkshopSection() {
     const [formSubmitted, setFormSubmitted] = useState(false)
-    const [showDialog, setShowDialog] = useState(false)
-    const [selectedWorkshop, setSelectedWorkshop] = useState<{
-        title: string;
-        description: string;
-        image: string;
-        duration: string;
-        price: string;
-        capacity: string;
-    } | null>(null)
     const horizontalRef = useRef<HTMLDivElement>(null)
     const sectionsRef = useRef<HTMLDivElement>(null)
     const panelsRef = useRef<(HTMLDivElement | null)[]>([])
-    const [activePanel, setActivePanel] = useState(0)
 
-    // Sử dụng useGSAP hook để tạo animation
-    useGSAP(
-        () => {
-            if (horizontalRef.current && sectionsRef.current) {
-                // Tạo hiệu ứng scroll ngang
-                gsap.registerPlugin(ScrollTrigger)
+    useEffect(() => {
+        // Create a cleanup function to ensure all ScrollTriggers are properly killed
+        const cleanup = () => {
+            ScrollTrigger.getAll().forEach((trigger) => {
+                if (trigger.vars.id === "workshop-horizontal") {
+                    trigger.kill(true) // Kill and revert any changes
+                }
+            })
+        }
 
-                ScrollTrigger.create({
+        // Clean up any existing ScrollTriggers first
+        cleanup()
+
+        if (horizontalRef.current && sectionsRef.current && panelsRef.current.length > 0) {
+            // Get the panels
+            const panels = panelsRef.current.filter(Boolean) as HTMLDivElement[]
+
+            // Calculate the total width of all panels
+            const totalPanelsWidth = panels.reduce((total, panel) => total + panel.offsetWidth, 0)
+
+            // Set the width of the sections container to accommodate all panels
+            gsap.set(sectionsRef.current, { width: totalPanelsWidth })
+
+            // Create the horizontal scroll animation
+            const horizontalScroll = gsap.to(sectionsRef.current, {
+                x: () => -(totalPanelsWidth - window.innerWidth),
+                ease: "none",
+                scrollTrigger: {
+                    id: "workshop-horizontal", // Add an ID for easier reference
                     trigger: horizontalRef.current,
+                    pin: true,
                     start: "top top",
-                    end: "bottom bottom",
-                    onUpdate: (self) => {
-                        if (sectionsRef.current) {
-                            const progress = self.progress
-                            const maxScroll = sectionsRef.current.scrollWidth - window.innerWidth
-                            sectionsRef.current.style.transform = `translateX(-${progress * maxScroll}px)`
-
-                            // Update active panel for animations
-                            const panelCount = panelsRef.current.filter(Boolean).length
-                            const newActivePanel = Math.min(Math.floor(progress * panelCount), panelCount - 1)
-
-                            if (newActivePanel !== activePanel) {
-                                setActivePanel(newActivePanel)
-                            }
-                        }
+                    end: () => `+=${totalPanelsWidth - window.innerWidth}`,
+                    scrub: 1,
+                    invalidateOnRefresh: true,
+                    anticipatePin: 1,
+                    pinSpacing: true,
+                    onLeaveBack: (self) => {
+                        // Ensure proper unpinning when scrolling back up
+                        self.refresh()
                     },
-                    scrub: true,
-                })
-            }
-        },
-        { scope: horizontalRef, dependencies: [activePanel] },
-    )
+                    onLeave: (self) => {
+                        // Ensure proper unpinning when scrolling down
+                        self.refresh()
+                    },
+                },
+            })
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+            // Animate each panel as it comes into view
+            panels.forEach((panel, i) => {
+                gsap.fromTo(
+                    panel,
+                    {
+                        opacity: i === 0 ? 1 : 0.5,
+                        scale: i === 0 ? 1 : 0.9,
+                    },
+                    {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.5,
+                        scrollTrigger: {
+                            trigger: panel,
+                            start: "left center",
+                            toggleActions: "play none none reverse",
+                            containerAnimation: horizontalScroll,
+                        },
+                    },
+                )
+            })
+
+            // Force a refresh of ScrollTrigger to ensure proper layout
+            ScrollTrigger.refresh()
+        }
+
+        // Clean up function
+        return cleanup
+    }, [])
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         setFormSubmitted(true)
+        // In a real application, you would send the form data to a server here
     }
 
     const workshops = [
@@ -178,41 +234,11 @@ export default function WorkshopSection() {
         },
     ]
 
-    // Custom dialog component for React
-    const Dialog = ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }) => {
-        if (!isOpen) return null
-
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-auto">
-                    <div className="p-4 border-b">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">{title}</h3>
-                            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                                <span className="sr-only">Đóng</span>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div className="p-4">{children}</div>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <section id="workshop" className="py-12 md:py-20 bg-gray-50">
             <div className="container mx-auto px-4">
                 {/* Workshop Introduction */}
-                <div className="text-center mb-8 md:mb-16">
+                <div className="text-center mb-8 md:mb-16" data-aos="fade-up">
                     <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">Lớp Học Làm Pizza</h2>
                     <div className="w-20 h-1 bg-primary mx-auto mb-4 md:mb-6"></div>
                     <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base">
@@ -227,15 +253,15 @@ export default function WorkshopSection() {
                     {workshops.map((workshop, index) => (
                         <div
                             key={index}
-                            className="bg-white rounded-lg overflow-hidden shadow-lg opacity-0 animate-fade-in"
-                            style={{ animationDelay: `${index * 150}ms` }}
+                            className="bg-white rounded-lg overflow-hidden shadow-lg"
+                            data-aos="fade-up"
+                            data-aos-delay={index * 100}
                         >
                             <div className="relative h-40 md:h-48">
                                 <img
                                     src={workshop.image || "/placeholder.svg"}
                                     alt={workshop.title}
                                     className="w-full h-full object-cover"
-                                    loading="lazy"
                                 />
                             </div>
                             <div className="p-4 md:p-6">
@@ -255,124 +281,88 @@ export default function WorkshopSection() {
                                         <span className="ml-1">mỗi người</span>
                                     </div>
                                 </div>
-                                <button
-                                    className="w-full bg-primary text-white hover:bg-primary/90 text-sm md:text-base py-2 md:py-2.5 rounded-md"
-                                    onClick={() => {
-                                        setSelectedWorkshop(workshop)
-                                        setShowDialog(true)
-                                    }}
-                                >
-                                    Đặt Ngay
-                                </button>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="w-full bg-primary hover:bg-primary/90 text-sm md:text-base py-2 md:py-2.5">
+                                            Đặt Ngay
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[425px] max-w-[90vw]">
+                                        <DialogHeader>
+                                            <DialogTitle>Đặt Lớp Học: {workshop.title}</DialogTitle>
+                                            <DialogDescription>
+                                                Điền vào mẫu dưới đây để đặt chỗ trong lớp học làm pizza của chúng tôi.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        {!formSubmitted ? (
+                                            <form onSubmit={handleSubmit}>
+                                                <div className="grid gap-4 py-4">
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="name" className="text-right">
+                                                            Họ tên
+                                                        </Label>
+                                                        <Input id="name" className="col-span-3" required />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="email" className="text-right">
+                                                            Email
+                                                        </Label>
+                                                        <Input id="email" type="email" className="col-span-3" required />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="phone" className="text-right">
+                                                            Điện thoại
+                                                        </Label>
+                                                        <Input id="phone" type="tel" className="col-span-3" required />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="date" className="text-right">
+                                                            Ngày
+                                                        </Label>
+                                                        <Input id="date" type="date" className="col-span-3" required />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="participants" className="text-right">
+                                                            Số người
+                                                        </Label>
+                                                        <Input id="participants" type="number" min="1" className="col-span-3" required />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-start gap-4">
+                                                        <Label htmlFor="message" className="text-right pt-2">
+                                                            Tin nhắn
+                                                        </Label>
+                                                        <Textarea id="message" className="col-span-3" />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button type="submit" className="bg-primary hover:bg-primary/90">
+                                                        Gửi Đặt Chỗ
+                                                    </Button>
+                                                </DialogFooter>
+                                            </form>
+                                        ) : (
+                                            <div className="py-6 text-center">
+                                                <ChefHat className="w-16 h-16 mx-auto text-primary mb-4" />
+                                                <h3 className="text-xl font-semibold mb-2">Đã Nhận Đặt Chỗ!</h3>
+                                                <p className="text-gray-600 mb-4">
+                                                    Cảm ơn bạn đã đặt lớp học của chúng tôi. Chúng tôi sẽ liên hệ với bạn sớm để xác nhận đặt chỗ
+                                                    của bạn.
+                                                </p>
+                                                <Button onClick={() => setFormSubmitted(false)} variant="outline" className="mt-2">
+                                                    Đặt Lớp Học Khác
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Custom Dialog for Workshop Booking */}
-                <Dialog
-                    isOpen={showDialog}
-                    onClose={() => {
-                        setShowDialog(false)
-                        if (formSubmitted) setFormSubmitted(false)
-                    }}
-                    title={selectedWorkshop ? `Đặt Lớp Học: ${selectedWorkshop.title}` : "Đặt Lớp Học"}
-                >
-                    {!formSubmitted ? (
-                        <form onSubmit={handleSubmit}>
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Họ tên
-                                    </label>
-                                    <input
-                                        id="name"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email
-                                    </label>
-                                    <input
-                                        id="email"
-                                        type="email"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Điện thoại
-                                    </label>
-                                    <input
-                                        id="phone"
-                                        type="tel"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Ngày
-                                    </label>
-                                    <input
-                                        id="date"
-                                        type="date"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="participants" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Số người
-                                    </label>
-                                    <input
-                                        id="participants"
-                                        type="number"
-                                        min="1"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Tin nhắn
-                                    </label>
-                                    <textarea
-                                        id="message"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                        rows={4}
-                                    />
-                                </div>
-                                <div className="flex justify-end pt-4">
-                                    <button type="submit" className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md">
-                                        Gửi Đặt Chỗ
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="py-6 text-center">
-                            <ChefHat className="w-16 h-16 mx-auto text-primary mb-4" />
-                            <h3 className="text-xl font-semibold mb-2">Đã Nhận Đặt Chỗ!</h3>
-                            <p className="text-gray-600 mb-4">
-                                Cảm ơn bạn đã đặt lớp học của chúng tôi. Chúng tôi sẽ liên hệ với bạn sớm để xác nhận đặt chỗ của bạn.
-                            </p>
-                            <button
-                                onClick={() => setFormSubmitted(false)}
-                                className="mt-2 border border-gray-300 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
-                            >
-                                Đặt Lớp Học Khác
-                            </button>
-                        </div>
-                    )}
-                </Dialog>
-
                 {/* Unique Pizzas Section */}
                 <div className="mb-10 md:mb-16">
-                    <div className="text-center mb-6 md:mb-12">
+                    <div className="text-center mb-6 md:mb-12" data-aos="fade-up">
                         <h2 className="text-2xl md:text-3xl font-bold mb-4">Những Loại Pizza Độc Đáo Bạn Sẽ Học Làm</h2>
                         <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base">
                             Khám phá các món sáng tạo đặc trưng của chúng tôi vượt ra ngoài truyền thống. Trong các lớp học của chúng
@@ -384,15 +374,15 @@ export default function WorkshopSection() {
                         {uniquePizzas.map((pizza, index) => (
                             <div
                                 key={index}
-                                className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow opacity-0 animate-fade-in"
-                                style={{ animationDelay: `${index * 150}ms` }}
+                                className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+                                data-aos="flip-left"
+                                data-aos-delay={index * 100}
                             >
                                 <div className="relative h-32 sm:h-40 md:h-48">
                                     <img
                                         src={pizza.image || "/placeholder.svg"}
                                         alt={pizza.name}
                                         className="w-full h-full object-cover"
-                                        loading="lazy"
                                     />
                                 </div>
                                 <div className="p-3 md:p-4">
@@ -415,22 +405,22 @@ export default function WorkshopSection() {
                 </div>
             </div>
 
-            {/* Simplified Horizontal Scrolling Workshop Benefits Section */}
+            {/* Horizontal Scrolling Workshop Benefits Section */}
+            {/* This is now outside the container to avoid layout issues */}
             <div
                 ref={horizontalRef}
                 className="relative h-screen overflow-hidden"
                 style={{
-                    marginBottom: "100px",
+                    marginBottom: "100px", // Add extra space after the section
                     zIndex: 1,
                 }}
             >
-                <div ref={sectionsRef} className="flex absolute top-0 left-0 h-full transition-transform duration-300">
+                <div ref={sectionsRef} className="flex absolute top-0 left-0 h-full">
                     {benefitsPanels.map((panel, index) => (
                         <div
                             key={index}
                             ref={(el) => { panelsRef.current[index] = el }}
-                            className={`w-screen h-full flex flex-col items-center justify-center p-8 bg-white transition-opacity duration-500 ${index === activePanel ? "opacity-100" : "opacity-50"
-                                }`}
+                            className="w-screen h-full flex flex-col items-center justify-center p-8 bg-white"
                         >
                             <div className="max-w-3xl mx-auto text-center">
                                 {panel.icon}
@@ -446,11 +436,11 @@ export default function WorkshopSection() {
                                     ))}
                                 </div>
 
-                                <a href="/workshop">
-                                    <button className="mt-10 bg-primary hover:bg-primary/90 text-white text-base md:text-lg py-3 px-8 rounded-md">
-                                        Tham Gia Lớp Học <ArrowRight className="ml-2 h-5 w-5 inline-block" />
-                                    </button>
-                                </a>
+                                <Link to="/workshop">
+                                    <Button className="mt-10 bg-primary hover:bg-primary/90 text-base md:text-lg py-3 px-8">
+                                        Tham Gia Lớp Học <ArrowRight className="ml-2 h-5 w-5" />
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     ))}

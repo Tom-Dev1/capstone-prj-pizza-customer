@@ -1,32 +1,59 @@
+"use client"
+
 import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
+import { gsap } from "gsap"
 import { Utensils, Award, Clock, Leaf } from "lucide-react"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+gsap.registerPlugin(ScrollTrigger)
 
-// Optimized version without heavy GSAP animations
 export default function Features() {
     const sectionRef = useRef<HTMLElement>(null)
+    const featureRefs = useRef<(HTMLDivElement | null)[]>([])
 
-    // Simple animation with Intersection Observer instead of GSAP
     useEffect(() => {
-        if (!sectionRef.current) return
+        if (sectionRef.current) {
+            // Create animation for the section sliding up
+            gsap.fromTo(
+                sectionRef.current,
+                {
+                    y: "10%",
+                },
+                {
+                    y: 0,
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: "top bottom",
+                        end: "top center",
+                        scrub: 1,
+                    },
+                },
+            )
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add("animate-fade-in")
-                        observer.unobserve(entry.target)
-                    }
-                })
-            },
-            { threshold: 0.1 },
-        )
-
-        // Observe feature cards
-        const featureCards = sectionRef.current.querySelectorAll(".feature-card")
-        featureCards.forEach((card) => observer.observe(card))
-
-        return () => observer.disconnect()
+            // Animate each feature card
+            featureRefs.current.forEach((ref, index) => {
+                if (ref) {
+                    gsap.fromTo(
+                        ref,
+                        {
+                            opacity: 0,
+                            y: 30,
+                        },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.4,
+                            delay: 0.1 * index,
+                            scrollTrigger: {
+                                trigger: ref,
+                                start: "top bottom-=50",
+                                toggleActions: "play none none reverse",
+                            },
+                        },
+                    )
+                }
+            })
+        }
     }, [])
 
     const features = [
@@ -54,6 +81,7 @@ export default function Features() {
         },
     ]
 
+    // Update the Features component for better responsiveness
     return (
         <section id="features" ref={sectionRef} className="bg-gray-50 py-12 md:py-20">
             <div className="container mx-auto px-4">
@@ -90,8 +118,8 @@ export default function Features() {
                     {features.map((feature, index) => (
                         <div
                             key={index}
-                            className="feature-card card p-5 md:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow opacity-0"
-                            style={{ animationDelay: `${index * 150}ms` }}
+                            ref={(el) => { featureRefs.current[index] = el }}
+                            className="card p-5 md:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow"
                         >
                             <div className="mb-4 inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10">
                                 {feature.icon}

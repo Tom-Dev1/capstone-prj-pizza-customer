@@ -1,14 +1,17 @@
-import { useRef } from "react"
+"use client"
+
+import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { useGSAP } from "@gsap/react"
-import gsap from "gsap"
-import { Star } from 'lucide-react'
+import { gsap } from "gsap"
+import { Star } from "lucide-react"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Testimonials() {
     const sectionRef = useRef<HTMLDivElement>(null)
 
-    // Sử dụng useGSAP hook để tạo animation
-    useGSAP(() => {
+    useEffect(() => {
         if (sectionRef.current) {
             const testimonials = sectionRef.current.querySelectorAll(".testimonial-item")
 
@@ -26,10 +29,10 @@ export default function Testimonials() {
                         start: "top 75%",
                         toggleActions: "play none none reverse",
                     },
-                }
+                },
             )
         }
-    }, { scope: sectionRef, dependencies: [] }) // Giới hạn phạm vi của GSAP trong section này
+    }, [])
 
     const testimonials = [
         {
@@ -120,3 +123,4 @@ export default function Testimonials() {
         </section>
     )
 }
+
