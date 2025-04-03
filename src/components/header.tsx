@@ -79,10 +79,8 @@ export default function Header() {
     const getNavItems = () => {
         const items = [
             { name: "Trang chủ", href: "/" },
-            { name: "Đặc điểm", href: "/#features" },
             { name: "Thực đơn", href: "/#menu" },
-            { name: "Quy trình", href: "/#process" },
-            { name: "Lớp học", href: "/workshop" },
+            { name: "Workshop", href: "/workshop" },
             { name: "Liên hệ", href: "/#contact" },
         ]
 
