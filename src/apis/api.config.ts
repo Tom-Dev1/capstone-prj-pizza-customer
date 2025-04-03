@@ -41,6 +41,9 @@ export const API_ENDPOINTS = {
         MY_BOOKINGS: "/workshop-bookings",
     },
 
+    RESERVATION: {
+        CREATE: '/reservations'
+    }
     // // Categories endpoints
     // CATEGORIES: {
     //     LIST: "/categories",

@@ -21,7 +21,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Link } from "react-router-dom"
 
-
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger)
 
@@ -447,7 +446,8 @@ export default function WorkshopSection() {
                 </div>
             </div>
 
-
+            {/* Add a spacer div to ensure proper spacing after the horizontal section */}
+            <div className="h-20"></div>
         </section>
     )
 }

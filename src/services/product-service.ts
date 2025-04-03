@@ -3,7 +3,7 @@ import type ApiResponse from "@/apis/apiUtils"
 import { get } from "@/apis/apiUtils"
 
 // Product Types
-export type ProductType = "ColdKitchen" | "HotKitchen" | "Drink" // mở rộng nếu có thêm loại
+export type ProductType = "ColdKitchen" | "HotKitchen"
 
 export interface OptionItems {
     id: string
