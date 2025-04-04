@@ -1,23 +1,25 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom"
-import HomePage from "@/pages/home-page"
-import AuthLayout from "@/layouts/AuthLayout"
-import LoginPage from "@/pages/auth/LoginPage"
-import RegisterPage from "@/pages/auth/RegisterPage"
-import CustomerDashboard from "@/pages/customer/dashboard"
-import { GuestRoute } from "./GuestRoute"
-import UserLayout from "@/layouts/UserLayout"
-import NotFound from "@/pages/not-found"
-import CustomerSetting from "@/pages/customer/setting"
-import VerifyPage from "@/pages/auth/verify-page"
-import AuthVerificationCheck from "@/components/auth-verification-check"
-import { ProtectedRoute } from "./ProtectedRoute"
-import CustomerWorkshops from "@/pages/customer/workshop"
-import GuestWorkshop from "@/pages/public-workshops"
-import Booking from "@/pages/booking"
-import GuestLayout from "@/layouts/GuestLayout"
+import { lazy } from "react"
+// Lazy load pages
+const HomePage = lazy(() => import("@/pages/home-page"));
+const AuthLayout = lazy(() => import("@/layouts/AuthLayout"));
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
+const CustomerDashboard = lazy(() => import("@/pages/customer/dashboard"));
+const CustomerSetting = lazy(() => import("@/pages/customer/setting"));
+const VerifyPage = lazy(() => import("@/pages/auth/verify-page"));
+const CustomerWorkshops = lazy(() => import("@/pages/customer/workshop"));
+const GuestWorkshop = lazy(() => import("@/pages/public-workshops"));
+const Booking = lazy(() => import("@/pages/booking"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+const UserLayout = lazy(() => import("@/layouts/UserLayout"));
+const AuthVerificationCheck = lazy(() => import("@/components/auth-verification-check"));
 
 
 
+const GuestLayout = lazy(() => import("@/layouts/GuestLayout"))
+import { GuestRoute } from "./GuestRoute";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 // Define routes
 const routes: RouteObject[] = [
@@ -29,7 +31,7 @@ const routes: RouteObject[] = [
 
     },
     {
-        path: 'workshop',
+        path: '/workshop',
         element: (
             <GuestLayout>
                 < GuestWorkshop />
@@ -37,7 +39,7 @@ const routes: RouteObject[] = [
         )
     },
     {
-        path: 'booking',
+        path: '/booking',
         element: (
             <GuestLayout>
                 <Booking />

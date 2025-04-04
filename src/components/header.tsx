@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, User, LogOut, Settings, CreditCard } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -24,7 +24,9 @@ export default function Header() {
     const [lastScrollY, setLastScrollY] = useState(0)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const { isAuthenticated, user, logout } = useAuth()
-    const pathname = window.location.pathname;
+    const pathname = window.location.pathname
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [isPending, startTransition] = useTransition()
 
     // Check if current route is home page
     const isHomePage = pathname === "/"
@@ -131,6 +133,17 @@ export default function Header() {
                                 <Link
                                     key={item.name}
                                     to={item.href}
+                                    onClick={(e) => {
+                                        if (item.href.startsWith("/#")) {
+                                            // Handle hash links normally
+                                            return
+                                        }
+                                        e.preventDefault()
+                                        startTransition(() => {
+                                            window.history.pushState({}, "", item.href)
+                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                        })
+                                    }}
                                     className={cn(
                                         "font-medium transition-colors hover:text-primary text-sm lg:text-base",
                                         isHomePage && !scrolled ? "text-white" : "text-gray-800",
@@ -167,19 +180,49 @@ export default function Header() {
                                             <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild>
-                                                <Link to="/customer/dashboard" className="flex w-full cursor-pointer items-center">
+                                                <Link
+                                                    to="/customer/dashboard"
+                                                    className="flex w-full cursor-pointer items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        startTransition(() => {
+                                                            window.history.pushState({}, "", "/customer/dashboard")
+                                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                                        })
+                                                    }}
+                                                >
                                                     <User className="mr-2 h-4 w-4" />
                                                     <span>Hồ sơ</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <Link to="/customer/orders" className="flex w-full cursor-pointer items-center">
+                                                <Link
+                                                    to="/customer/orders"
+                                                    className="flex w-full cursor-pointer items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        startTransition(() => {
+                                                            window.history.pushState({}, "", "/customer/orders")
+                                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                                        })
+                                                    }}
+                                                >
                                                     <CreditCard className="mr-2 h-4 w-4" />
                                                     <span>Đơn hàng của tôi</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <Link to="/customer/settings" className="flex w-full cursor-pointer items-center">
+                                                <Link
+                                                    to="/customer/settings"
+                                                    className="flex w-full cursor-pointer items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        startTransition(() => {
+                                                            window.history.pushState({}, "", "/customer/settings")
+                                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                                        })
+                                                    }}
+                                                >
                                                     <Settings className="mr-2 h-4 w-4" />
                                                     <span>Cài đặt</span>
                                                 </Link>
@@ -193,7 +236,16 @@ export default function Header() {
                                     </DropdownMenu>
                                 </div>
                             ) : (
-                                <Link to="/booking">
+                                <Link
+                                    to="/booking"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        startTransition(() => {
+                                            window.history.pushState({}, "", "/booking")
+                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                        })
+                                    }}
+                                >
                                     <Button className="bg-primary text-white hover:bg-primary/90 text-sm lg:text-base py-2 px-4 md:px-6">
                                         Đặt bàn ngay
                                     </Button>
@@ -229,7 +281,18 @@ export default function Header() {
                                                     <Link
                                                         to={item.href}
                                                         className="text-base md:text-lg font-medium text-gray-800 hover:text-primary transition-colors"
-                                                        onClick={() => setMobileMenuOpen(false)}
+                                                        onClick={(e) => {
+                                                            setMobileMenuOpen(false)
+                                                            if (item.href.startsWith("/#")) {
+                                                                // Handle hash links normally
+                                                                return
+                                                            }
+                                                            e.preventDefault()
+                                                            startTransition(() => {
+                                                                window.history.pushState({}, "", item.href)
+                                                                window.dispatchEvent(new PopStateEvent("popstate"))
+                                                            })
+                                                        }}
                                                     >
                                                         {item.name}
                                                     </Link>
@@ -252,13 +315,33 @@ export default function Header() {
                                                         <div className="font-semibold">{user?.name}</div>
                                                     </div>
                                                 </div>
-                                                <Link to="/customer/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                                                <Link
+                                                    to="/customer/dashboard"
+                                                    onClick={(e) => {
+                                                        setMobileMenuOpen(false)
+                                                        e.preventDefault()
+                                                        startTransition(() => {
+                                                            window.history.pushState({}, "", "/customer/dashboard")
+                                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                                        })
+                                                    }}
+                                                >
                                                     <Button className="w-full bg-primary text-white hover:bg-primary/90 mb-2 text-sm md:text-base py-2">
                                                         <User className="mr-2 h-4 w-4" />
                                                         Hồ sơ
                                                     </Button>
                                                 </Link>
-                                                <Link to="/customer/orders" onClick={() => setMobileMenuOpen(false)}>
+                                                <Link
+                                                    to="/customer/orders"
+                                                    onClick={(e) => {
+                                                        setMobileMenuOpen(false)
+                                                        e.preventDefault()
+                                                        startTransition(() => {
+                                                            window.history.pushState({}, "", "/customer/orders")
+                                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                                        })
+                                                    }}
+                                                >
                                                     <Button
                                                         variant="outline"
                                                         className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2"
@@ -267,7 +350,17 @@ export default function Header() {
                                                         Đơn hàng của tôi
                                                     </Button>
                                                 </Link>
-                                                <Link to="/customer/settings" onClick={() => setMobileMenuOpen(false)}>
+                                                <Link
+                                                    to="/customer/settings"
+                                                    onClick={(e) => {
+                                                        setMobileMenuOpen(false)
+                                                        e.preventDefault()
+                                                        startTransition(() => {
+                                                            window.history.pushState({}, "", "/customer/settings")
+                                                            window.dispatchEvent(new PopStateEvent("popstate"))
+                                                        })
+                                                    }}
+                                                >
                                                     <Button
                                                         variant="outline"
                                                         className="w-full border-primary text-primary hover:bg-primary hover:text-white mb-2 text-sm md:text-base py-2"
@@ -289,7 +382,17 @@ export default function Header() {
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                                            <Link
+                                                to="/auth/login"
+                                                onClick={(e) => {
+                                                    setMobileMenuOpen(false)
+                                                    e.preventDefault()
+                                                    startTransition(() => {
+                                                        window.history.pushState({}, "", "/auth/login")
+                                                        window.dispatchEvent(new PopStateEvent("popstate"))
+                                                    })
+                                                }}
+                                            >
                                                 <Button className="w-full bg-primary text-white hover:bg-primary/90 text-sm md:text-base py-2">
                                                     Đăng nhập
                                                 </Button>

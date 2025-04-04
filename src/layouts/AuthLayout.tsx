@@ -33,7 +33,7 @@ export default function AuthLayout() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="bg-primary p-4 text-white text-center"
+                    className="bg-primary text-white text-center"
                 >
                     <h1 className="text-2xl font-bold">PizzaCapstone</h1>
                 </motion.div>
@@ -70,7 +70,7 @@ export default function AuthLayout() {
                 </motion.div>
 
                 {/* Right side - Auth forms */}
-                <div className="w-full md:w-1/2 bg-white p-4 md:p-8 flex items-center justify-center">
+                <div className="w-full md:w-1/2  bg-white p-4 md:p-8 flex items-center justify-center">
                     <div className="w-full max-w-md">
                         {/* Mobile Branding - Only visible on mobile */}
                         {isMobile && (
@@ -78,7 +78,7 @@ export default function AuthLayout() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
-                                className="mb-8 text-center"
+                                className="mb-8 mt-5 text-center"
                             >
                                 <div className="relative w-32 h-32 mx-auto mb-4">
                                     <img
@@ -86,7 +86,7 @@ export default function AuthLayout() {
                                         alt="Delicious Pizza"
                                         className="rounded-full w-full h-full object-cover shadow-md"
                                     />
-                                    <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-2 shadow-md">
+                                    <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-2 shadow-md h-[56px] w-[56px]">
                                         <div className="text-center">
                                             <span className="block text-sm font-bold">20%</span>
                                             <span className="text-xs">OFF</span>
