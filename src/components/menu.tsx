@@ -72,37 +72,37 @@ export default function Menu() {
             name: "Margherita",
             description: "Sốt cà chua cổ điển, phô mai mozzarella và húng quế tươi",
             price: "299.000đ",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "https://img.freepik.com/premium-photo/fresh-pizza-wooden-board-isolated-white_93675-111113.jpg?w=740",
         },
         {
             name: "Pepperoni",
             description: "Sốt cà chua, phô mai mozzarella và xúc xích pepperoni cay",
             price: "349.000đ",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "https://img.freepik.com/free-photo/delicious-italian-pizza-with-tomato-olives-pepperoni-mushrooms-top-view-isolated-white-background-still-life-copy-space_639032-299.jpg?t=st=1743807744~exp=1743811344~hmac=13055005f9ccb7b00c2f3ef07b52c663c57a97b7123479cf0179f6488c3db71d&w=740",
         },
         {
             name: "Rau Củ",
             description: "Sốt cà chua, phô mai mozzarella, ớt chuông, nấm và ô liu",
             price: "329.000đ",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "https://img.freepik.com/free-photo/mushroom-pizza-vegetarian-white-background-isolated-still-life-copy-space-top-view-flat-lay_639032-303.jpg?t=st=1743808255~exp=1743811855~hmac=134c513873ae611e1e9ea69bd4d9cfec802422bd181fbff64d9e520eb3df52d7&w=740",
         },
         {
             name: "Hawaiian",
             description: "Sốt cà chua, phô mai mozzarella, thịt giăm bông và dứa",
             price: "359.000đ",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "https://img.freepik.com/free-photo/hawaiian-pizza_1203-2455.jpg?ga=GA1.1.248564778.1736943439&semt=ais_hybrid&w=740",
         },
         {
             name: "Bốn Loại Phô Mai",
             description: "Sốt cà chua, phô mai mozzarella, gorgonzola, parmesan và ricotta",
             price: "389.000đ",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "https://img.freepik.com/premium-photo/italian-pizza-slices-with-melting-cheese-wooden-plate-isolated-white-background_1299032-11244.jpg?w=826",
         },
         {
             name: "Diavola",
             description: "Sốt cà chua, phô mai mozzarella, xúc xích salami cay và ớt",
             price: "359.000đ",
-            image: "/placeholder.svg?height=300&width=300",
+            image: "https://img.freepik.com/free-photo/delicious-italian-pizza-with-tomato-olives-pepperoni-mushrooms-top-view-isolated-white-background-still-life-copy-space_639032-299.jpg?t=st=1743807744~exp=1743811344~hmac=13055005f9ccb7b00c2f3ef07b52c663c57a97b7123479cf0179f6488c3db71d&w=740",
         },
     ]
 
@@ -173,7 +173,7 @@ export default function Menu() {
                 >
                     {pizzas.map((pizza, index) => (
                         <motion.div key={index} className="pizza-item card group" variants={item}>
-                            <div className="relative h-40 sm:h-48 overflow-hidden">
+                            <div className="relative h-40 sm:h-[400px] overflow-hidden">
                                 <img
                                     src={pizza.image || "/placeholder.svg"}
                                     alt={pizza.name}

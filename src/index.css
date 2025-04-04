@@ -1,9 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+
+    --font-montserrat: 'Montserrat', sans-serif;
+    --font-great-vibes: 'Great Vibes', cursive;
+  
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -33,6 +40,8 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+    
+
   }
 
   .dark {
@@ -71,34 +80,46 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-montserrat;
+  }
+
+  /* Font styles for different text elements */
+  h1,
+  .h1 {
+    @apply font-bold text-4xl md:text-5xl lg:text-6xl font-montserrat tracking-tight;
+  }
+
+  h2,
+  .h2 {
+    @apply font-bold text-3xl md:text-4xl font-montserrat tracking-tight;
+  }
+
+  h3,
+  .h3 {
+    @apply font-bold text-xl md:text-2xl font-montserrat tracking-tight;
+  }
+
+  h4,
+  .h4 {
+    @apply font-bold text-lg md:text-xl font-montserrat;
+  }
+
+  p {
+    @apply font-montserrat;
+  }
+
+  /* Special heading styles */
+  .display-heading {
+    @apply font-great-vibes text-4xl sm:text-5xl md:text-6xl lg:text-7xl;
+  }
+
+  .accent-heading {
+    @apply font-great-vibes text-3xl sm:text-4xl md:text-5xl text-primary;
   }
 
   /* Standardize section spacing */
   section {
     @apply py-16 md:py-24;
-  }
-
-  /* Standardize headings */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-bold tracking-tight;
-  }
-
-  h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl;
-  }
-
-  h2 {
-    @apply text-3xl md:text-4xl;
-  }
-
-  h3 {
-    @apply text-xl md:text-2xl;
   }
 
   /* Standardize section dividers */

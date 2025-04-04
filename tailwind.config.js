@@ -18,6 +18,12 @@ const config = {
 			},
 		},
 		extend: {
+			fontFamily: {
+				montserrat: ['var(--font-montserrat)', 'sans-serif'],
+				main: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+				display: ["var(--font-great-vibes)", "cursive"],
+				script: ['"Great Vibes"', 'cursive'],
+			},
 			colors: {
 				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",
@@ -76,5 +82,6 @@ const config = {
 	},
 	plugins: [require("tailwindcss-animate")],
 }
+
 export default config
 

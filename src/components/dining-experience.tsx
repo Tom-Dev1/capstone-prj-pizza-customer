@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Link } from "react-router-dom"
 
+
 gsap.registerPlugin(ScrollTrigger)
 
 export default function DiningExperience() {
@@ -42,30 +43,37 @@ export default function DiningExperience() {
                     scrollTrigger: {
                         trigger: sectionRef.current,
                         start: "top 80%",
-                        toggleActions: "play none none none",
+                        toggleActions: "play none none reverse", // This will reverse the animation when scrolling back up
                     },
                 },
             )
 
-            // Animate each dining area image
+            // Animate each dining area image with a different animation style
             imageRefs.current.forEach((ref, index) => {
                 if (ref) {
-                    gsap.fromTo(
-                        ref,
-                        { opacity: 0, scale: 0.9 },
-                        {
-                            opacity: 1,
-                            scale: 1,
-                            duration: 0.6,
-                            delay: 0.2 * index,
-                            ease: "power2.out",
-                            scrollTrigger: {
-                                trigger: ref,
-                                start: "top 85%",
-                                toggleActions: "play none none none",
-                            },
+                    // Set initial state
+                    gsap.set(ref, {
+                        opacity: 0,
+                        x: index % 2 === 0 ? -50 : 50, // Alternate left and right entrance
+                        rotationY: index % 2 === 0 ? -10 : 10, // Slight rotation for 3D effect
+                    })
+
+                    // Create animation
+                    gsap.to(ref, {
+                        opacity: 1,
+                        x: 0,
+                        rotationY: 0,
+                        duration: 0.8,
+                        delay: 0.15 * index,
+                        ease: "back.out(1.7)",
+                        scrollTrigger: {
+                            trigger: ref,
+                            start: "top 70%",
+                            end: "top 0%",
+                            toggleActions: "play reverse restart reverse", // Play on enter, reverse on leave, restart on re-enter, reverse on re-leave
+                            markers: false,
                         },
-                    )
+                    })
                 }
             })
         }
@@ -85,7 +93,8 @@ export default function DiningExperience() {
         {
             title: "Khu Vực Chính",
             description: "Không gian rộng rãi với thiết kế hiện đại, phù hợp cho các nhóm bạn bè và gia đình.",
-            image: "https://placehold.co/400x600",
+            image:
+                "https://img.freepik.com/free-photo/restaurant-interior_1127-3394.jpg?t=st=1743793441~exp=1743797041~hmac=14480c475844619692c4e17133da7dacba5730a08383a55dcdf4edcd94546704&w=996",
             capacity: "60 chỗ ngồi",
             features: ["Bàn lớn", "Bàn nhỏ", "Ghế cao"],
         },
@@ -93,14 +102,16 @@ export default function DiningExperience() {
             title: "Khu Vực Ngoài Trời",
             description:
                 "Không gian ngoài trời thoáng đãng với cây xanh và ánh sáng tự nhiên, lý tưởng cho những ngày đẹp trời.",
-            image: "https://placehold.co/400x600",
+            image:
+                "https://img.freepik.com/free-photo/restaurants-terrace-with-black-green-awnings_157027-4389.jpg?t=st=1743793504~exp=1743797104~hmac=fcfa231f7ef69e5e09e3dc2fc4f67c324e6cda4b3346c9551061719a5de816b3&w=1380",
             capacity: "40 chỗ ngồi",
             features: ["Mái che", "Đèn trang trí", "Cây xanh"],
         },
         {
             title: "Phòng Riêng",
             description: "Không gian riêng tư cho các buổi họp mặt, sinh nhật hoặc sự kiện đặc biệt với dịch vụ chuyên biệt.",
-            image: "https://placehold.co/400x600",
+            image:
+                "https://img.freepik.com/free-photo/elegant-wedding-reception-room-with-sea-view-through-windows_637285-8612.jpg?t=st=1743793665~exp=1743797265~hmac=74bce28e72a26f2fdb9a4ccb0535a6944d13d4b9a8a2a31c89a4f703934fef52&w=996",
             capacity: "20 chỗ ngồi",
             features: ["Âm thanh riêng", "Màn hình", "Phục vụ riêng"],
         },
@@ -167,10 +178,7 @@ export default function DiningExperience() {
                     {diningAreas.map((area, index) => (
                         <div
                             key={index}
-
-                            ref={(el) => {
-                                imageRefs.current[index] = el
-                            }}
+                            ref={(el) => { imageRefs.current[index] = el }}
                             className="bg-white rounded-lg overflow-hidden shadow-lg"
                         >
                             <div className="relative h-48 md:h-56 lg:h-64 overflow-hidden">
@@ -204,7 +212,15 @@ export default function DiningExperience() {
                     <h3 className="text-xl md:text-2xl font-semibold text-center mb-8">Điều Gì Làm Nên Trải Nghiệm Đặc Biệt</h3>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                         {diningFeatures.map((feature, index) => (
-                            <div key={index} className="text-center" data-aos="fade-up" data-aos-delay={index * 100}>
+                            <div
+                                key={index}
+                                className="text-center transform transition-all duration-500 hover:scale-105"
+                                data-aos="flip-left"
+                                data-aos-delay={index * 150}
+                                data-aos-duration="800"
+                                data-aos-anchor-placement="center-bottom"
+                                data-aos-mirror="true" // This will make the animation play again when scrolling back up
+                            >
                                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                                     {feature.icon}
                                 </div>
@@ -323,7 +339,7 @@ export default function DiningExperience() {
                     </div>
                     <div className="relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-lg">
                         <img
-                            src="https://placehold.co/600x800"
+                            src="https://img.freepik.com/premium-photo/pizza-dough-hands-wooden-table-people-cooking-with-flour-cheese-fruit-food-while-home-nutrition-italian-meal-strawberry-kitchen-baking-process-with-ingredients-chef_590464-223365.jpg?w=996"
                             alt="Sự kiện đặc biệt"
                             className="w-full h-full object-cover"
                         />

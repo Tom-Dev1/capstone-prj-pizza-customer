@@ -1,18 +1,9 @@
+"use client"
+
 import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
-import {
-    Calendar,
-    Clock,
-    Users,
-    ChefHat,
-    Award,
-    ArrowRight,
-    Utensils,
-    Star,
-    GraduationCap,
-    Briefcase,
-    BookOpen,
-} from "lucide-react"
+import { Calendar, Clock, Users, ChefHat, Award, ArrowRight, Utensils, Star } from "lucide-react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Button } from "@/components/ui/button"
@@ -54,11 +45,11 @@ export default function WorkshopSection() {
         cleanup()
 
         if (horizontalRef.current && sectionsRef.current && panelsRef.current.length > 0) {
-            // Get only the first 3 panels for horizontal scrolling
-            const horizontalPanels = panelsRef.current.filter(Boolean).slice(0, 3) as HTMLDivElement[]
+            // Get the panels
+            const panels = panelsRef.current.filter(Boolean) as HTMLDivElement[]
+
             // Calculate the total width of all panels
-            // Calculate the total width of the horizontal panels
-            const totalPanelsWidth = horizontalPanels.reduce((total, panel) => total + panel.offsetWidth, 0)
+            const totalPanelsWidth = panels.reduce((total, panel) => total + panel.offsetWidth, 0)
 
             // Set the width of the sections container to accommodate all panels
             gsap.set(sectionsRef.current, { width: totalPanelsWidth })
@@ -89,7 +80,7 @@ export default function WorkshopSection() {
             })
 
             // Animate each panel as it comes into view
-            horizontalPanels.forEach((panel, i) => {
+            panels.forEach((panel, i) => {
                 gsap.fromTo(
                     panel,
                     {
@@ -252,29 +243,6 @@ export default function WorkshopSection() {
             background:
                 "https://img.freepik.com/free-photo/side-view-chef-baking-delicious-pizza_23-2150134248.jpg?t=st=1743804003~exp=1743807603~hmac=d4698486241acf58c2dd20c8fd463fd977e473825eac442aab68bb4330e74075&w=996",
             overlayColor: "rgba(62, 83, 62, 0.7)", // Green overlay for a fresh, vibrant feel
-        },
-        {
-            title: "Chứng Chỉ Pizza Chuyên Nghiệp",
-            description:
-                "Hoàn thành khóa học nâng cao của chúng tôi và nhận chứng chỉ pizza chuyên nghiệp được công nhận trong ngành ẩm thực.",
-            icon: <GraduationCap className="w-16 h-16 text-primary mb-6" />,
-            benefits: [
-                {
-                    icon: <Award className="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" />,
-                    text: "Chứng chỉ được công nhận bởi Hiệp hội Pizza Ý Chính hiệu",
-                },
-                {
-                    icon: <Briefcase className="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" />,
-                    text: "Cơ hội việc làm và phát triển sự nghiệp trong ngành ẩm thực",
-                },
-                {
-                    icon: <BookOpen className="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" />,
-                    text: "Tài liệu học tập chuyên sâu và hỗ trợ sau khóa học",
-                },
-            ],
-            background:
-                "https://img.freepik.com/premium-photo/happy-chef-holding-delicious-pizza_13339-163507.jpg?w=996",
-            overlayColor: "rgba(102, 105, 60, 0.7)", // Blue overlay for a professional feel
         },
     ]
 
@@ -455,12 +423,12 @@ export default function WorkshopSection() {
                 ref={horizontalRef}
                 className="relative h-screen overflow-hidden"
                 style={{
-                    marginBottom: "0", // Remove extra space after the section
+                    marginBottom: "100px", // Add extra space after the section
                     zIndex: 1,
                 }}
             >
                 <div ref={sectionsRef} className="flex absolute top-0 left-0 h-full">
-                    {benefitsPanels.slice(0, 3).map((panel, index) => (
+                    {benefitsPanels.map((panel, index) => (
                         <div
                             key={index}
                             ref={(el) => { panelsRef.current[index] = el }}
@@ -499,50 +467,9 @@ export default function WorkshopSection() {
                     ))}
                 </div>
             </div>
-            {/* Vertical Panel (4th panel) */}
-            <div
-                className="relative min-h-screen flex items-center justify-center p-8"
-                style={{
-                    backgroundImage: `url(${benefitsPanels[3].background})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    position: "relative",
-                }}
-                data-aos="fade-up"
-                data-aos-duration="800"
-                data-aos-offset="300"
-            >
-                {/* Overlay to ensure text readability */}
-                <div className="absolute inset-0" style={{ backgroundColor: benefitsPanels[3].overlayColor }}></div>
 
-                <div className="max-w-3xl mx-auto text-center relative z-10 text-white">
-                    {benefitsPanels[3].icon}
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6">{benefitsPanels[3].title}</h2>
-                    <p className="text-gray-200 text-lg mb-10">{benefitsPanels[3].description}</p>
-
-                    <div className="space-y-6 text-left">
-                        {benefitsPanels[3].benefits.map((benefit, i) => (
-                            <div key={i} className="flex items-start" data-aos="fade-right" data-aos-delay={i * 200}>
-                                {benefit.icon}
-                                <p className="text-gray-200">{benefit.text}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Link to="/workshop/">
-                        <Button
-                            className="mt-10 bg-primary hover:bg-primary/90 text-base md:text-lg py-3 px-8"
-                            data-aos="zoom-in"
-                            data-aos-delay="400"
-                        >
-                            Tìm Hiểu Thêm Về Chứng Chỉ <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Add a spacer div to ensure proper spacing after the vertical section */}
-
+            {/* Add a spacer div to ensure proper spacing after the horizontal section */}
+            <div className="h-20"></div>
         </section>
     )
 }

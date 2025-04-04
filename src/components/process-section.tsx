@@ -23,7 +23,7 @@ export default function ProcessSection() {
         if (sectionRef.current) {
             // Parallax effect for the background using GSAP
             gsap.to(".parallax-bg", {
-                y: "30%",
+                y: "40%",
                 ease: "none",
                 scrollTrigger: {
                     trigger: sectionRef.current,
@@ -61,28 +61,28 @@ export default function ProcessSection() {
             title: "Bột Nhào Thủ Công",
             description:
                 "Pizza của chúng tôi bắt đầu với bột nhào thủ công được làm mới hàng ngày. Chúng tôi sử dụng hỗn hợp bột đặc biệt và để lên men trong 24 giờ để tạo ra hương vị và kết cấu hoàn hảo.",
-            image: "https://placehold.co/400x400",
+            image: "https://img.freepik.com/free-photo/close-up-person-cooking_23-2150980258.jpg?t=st=1743805238~exp=1743808838~hmac=f46d52ef3e703224885f0cd0fd7746f4ce4ec4d1ad037839222eea6e23e493ff&w=996",
         },
         {
             number: "02",
             title: "Sốt Cao Cấp",
             description:
                 "Sốt đặc trưng của chúng tôi được làm từ cà chua San Marzano, nhập khẩu từ Ý và nổi tiếng với hương vị ngọt và độ axit thấp. Chúng tôi thêm hỗn hợp thảo mộc và gia vị để tạo ra hương vị hoàn hảo.",
-            image: "https://placehold.co/400x400",
+            image: "https://img.freepik.com/free-photo/tasty-traditional-pizza-arrangement_23-2148921295.jpg?t=st=1743793112~exp=1743796712~hmac=68332e71d53dd0391c4596f9b6fac47264568d48ac2cd7f51dbd54b06a06fa40&w=740",
         },
         {
             number: "03",
             title: "Nhân Chất Lượng",
             description:
                 "Chúng tôi chọn lựa những nguyên liệu tốt nhất cho nhân pizza, từ rau củ tươi đến các loại thịt và phô mai cao cấp. Mỗi loại nhân được lựa chọn cẩn thận để đảm bảo sự kết hợp hương vị tốt nhất.",
-            image: "https://placehold.co/400x400",
+            image: "https://img.freepik.com/free-photo/top-view-cook-preparing-pizza_23-2150283021.jpg?t=st=1743793157~exp=1743796757~hmac=3ad835591a2c59ceeaba8f130ecbc3aba749d32e7683184b98a26e17573109c5&w=996",
         },
         {
             number: "04",
             title: "Lò Đốt Củi",
             description:
                 "Pizza của chúng tôi được nướng trong lò đốt củi truyền thống ở nhiệt độ lên đến 480°C. Điều này tạo ra lớp vỏ hoàn hảo - giòn bên ngoài và mềm bên trong.",
-            image: "https://placehold.co/400x400",
+            image: "https://img.freepik.com/free-photo/high-angle-baking-delicious-pizza_23-2150235790.jpg?t=st=1743793275~exp=1743796875~hmac=cb963ab331dff957300807357ae4977d10e5d4bef0746526fc23bfe402037f67&w=996",
         },
     ]
 
@@ -90,30 +90,30 @@ export default function ProcessSection() {
         <section id="process" ref={sectionRef} className="relative overflow-hidden bg-gray-100 py-12 md:py-20">
             {/* Background elements */}
             <div className="absolute inset-0 parallax-bg opacity-10">
-                <div className="absolute top-0 left-0 w-32 md:w-64 h-32 md:h-64">
+                <div className="absolute top-20 left-72 w-32 md:w-64 h-32 md:h-64">
                     <img
-                        src="https://placehold.co/150x150"
+                        src="https://img.freepik.com/free-psd/freshly-baked-pizza-with-cut-slice-isolated-transparent-background_191095-9041.jpg?t=st=1743794254~exp=1743797854~hmac=67f634ae2393e824a1be020d68e1369bb6a7ae6c5a8f9f2ea3fd66bb50b387dd&w=826"
                         alt="Hình ảnh pizza"
                         width={200}
                         height={200}
                         className="rotate-element"
                     />
                 </div>
-                <div className="absolute bottom-20 right-10 w-24 md:w-48 h-24 md:h-48">
+                <div className="absolute bottom-96 right-64 w-24 md:w-48 h-24 md:h-48">
                     <img
-                        src="https://placehold.co/150x150"
+                        src="https://img.freepik.com/free-psd/delicious-pepperoni-pizza-with-mushrooms-olives_191095-91111.jpg?t=st=1743794226~exp=1743797826~hmac=02c764abc68fd252f9a4eebfdb72f4893572d9e404f72a84f870e90e0556d487&w=826"
                         alt="Hình ảnh pizza"
-                        width={150}
-                        height={150}
+                        width={250}
+                        height={250}
                         className="rotate-element"
                     />
                 </div>
-                <div className="absolute top-40 right-1/4 w-16 md:w-32 h-16 md:h-32">
+                <div className="absolute top-30 right-96 w-16 md:w-32 h-16 md:h-32">
                     <img
-                        src="https://placehold.co/150x150"
+                        src="https://img.freepik.com/free-psd/delicious-pepperoni-pizza-culinary-delight_632498-24206.jpg?t=st=1743794196~exp=1743797796~hmac=2c4fa7021545c481fe21957c39ecd27c63dfefa89f17f6fd2dc48c398bebb801&w=826"
                         alt="Hình ảnh pizza"
-                        width={100}
-                        height={100}
+                        width={300}
+                        height={300}
                         className="rotate-element"
                     />
                 </div>
