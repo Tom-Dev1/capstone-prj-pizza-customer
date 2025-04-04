@@ -25,8 +25,7 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const { isAuthenticated, user, logout } = useAuth()
     const pathname = window.location.pathname
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isPending, startTransition] = useTransition()
+    const [, startTransition] = useTransition()
 
     // Check if current route is home page
     const isHomePage = pathname === "/"
