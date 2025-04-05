@@ -113,7 +113,7 @@ export default function CustomerWorkshopList({
                             </p>
 
                             {workshopList.map((workshop) => (
-                                <div key={workshop.id} className="border rounded-lg overflow-hidden">
+                                <div key={workshop.id} className="border border-orange-100 rounded-lg overflow-hidden">
                                     <div className="bg-primary/5 p-4">
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -139,8 +139,8 @@ export default function CustomerWorkshopList({
                                                             : workshop.workshopRegisterStatus}
                                             </Badge>
                                         </div>
-
-                                        <div className="grid grid-cols-2 gap-2 mt-3">
+                                        <div className="border-t border-dashed border-primary/20 my-3"></div>
+                                        <div className="grid grid-cols-2 gap-2 mt-3 ">
                                             <div className="flex items-center">
                                                 <Calendar className="h-4 w-4 text-primary mr-2" />
                                                 <span className="text-sm">{formatDate(workshop.registeredAt)}</span>
@@ -151,16 +151,16 @@ export default function CustomerWorkshopList({
                                             </div>
                                             <div className="flex items-center">
                                                 <Clock className="h-4 w-4 text-primary mr-2" />
-                                                <span className="text-sm">Đăng ký: {formatDate(workshop.registeredAt)}</span>
+                                                <span className="">Đăng ký: {formatDate(workshop.registeredAt)}</span>
                                             </div>
-
-                                        </div>
-
-                                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-dashed border-primary/20">
                                             <div className="flex items-center">
                                                 <Wallet className="h-4 w-4 text-primary mr-1" />
-                                                <span className="font-medium">{workshop.totalFee.toLocaleString()} VND</span>
+                                                <span className="text-sm">{workshop.totalFee.toLocaleString()} VND</span>
                                             </div>
+                                        </div>
+
+                                        <div className="flex justify-between items-center mt-3 pt-2 ">
+
                                             {workshop.workshopPizzaRegisters && workshop.workshopPizzaRegisters.length > 0 && (
                                                 <Button
                                                     variant="ghost"

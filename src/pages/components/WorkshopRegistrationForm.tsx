@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { X, Loader2, AlertCircle, Check, Phone, ArrowRight, Users, Calendar, DollarSign, Pizza } from "lucide-react"
+import { X, Loader2, AlertCircle, Check, Phone, ArrowRight, Users, Calendar, Wallet, Pizza } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -298,7 +298,14 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             console.log("Đăng ký khóa học:", response);
 
             if (response.success) {
-                toast.success("Đăng ký Workshop thành công!")
+                toast.success("Đăng ký khóa học thành công!", {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                })
                 setSuccess("Đăng ký khóa học thành công!")
                 setRegistrationConfirmed(true)
 
@@ -308,7 +315,14 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                     onClose()
                 }, 2000)
             } else {
-                toast.error("Đăng ký Workshop thất bại!")
+                toast.error("Đăng ký Workshop thất bại!", {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                })
                 setError(response.message || "Đăng ký thất bại")
             }
         } catch (err) {
@@ -654,7 +668,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                         {/* Tổng chi phí */}
                                         <div className="bg-gray-50 p-3 rounded-md border">
                                             <h5 className="font-medium flex items-center">
-                                                <DollarSign className="h-4 w-4 mr-2" />
+                                                <Wallet className="h-4 w-4 mr-2" />
                                                 Chi phí
                                             </h5>
                                             <div className="mt-3 space-y-2">
@@ -725,7 +739,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                                                                 id={`option-${item.id}`}
                                                                                                 checked={isOptionItemSelected(food.productId, item.id)}
                                                                                                 onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
-                                                                                                className="h-3 w-3"
+
                                                                                             />
                                                                                             <Label htmlFor={`option-${item.id}`} className="ml-1 text-xs">
                                                                                                 {item.name}

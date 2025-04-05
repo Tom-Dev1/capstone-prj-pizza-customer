@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { workshopService, type Workshop, WorkshopStatus } from "../services/workshop-service"
 import WorkshopComponent from "./components/WorkshopComponent"
 import WorkshopRegistrationForm from "./components/WorkshopRegistrationForm"
+import { ToastContainer } from "react-toastify"
 
 export default function PublicWorkshops() {
     const { isAuthenticated } = useAuth()
@@ -108,6 +109,7 @@ export default function PublicWorkshops() {
     return (
         <>
             <div className="container mx-auto px-4 py-12">
+                <ToastContainer />
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold mb-4">Các Khóa Học Làm Bánh Pizza Sắp Tới</h1>
                     <p className="text-gray-600 max-w-2xl mx-auto">

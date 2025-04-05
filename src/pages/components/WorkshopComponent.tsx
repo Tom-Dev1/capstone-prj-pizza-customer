@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { format } from "date-fns"
-import { Calendar, MapPin, Users, Phone, Clock, DollarSign, Pizza, AlertCircle } from "lucide-react"
+import { Calendar, MapPin, Users, Phone, Clock, Wallet, Pizza, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -180,7 +180,7 @@ export default function WorkshopComponent({
                             </div>
                         </div>
                         <div className="flex items-start">
-                            <DollarSign className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <Wallet className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
                             <div>
                                 <p className="font-medium">Phí Tham Gia</p>
                                 <p className="text-sm text-gray-600">{workshop.totalFee.toLocaleString()} VND</p>
