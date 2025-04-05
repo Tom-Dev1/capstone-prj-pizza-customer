@@ -219,17 +219,14 @@ export default function WorkshopComponent({
                             </div>
 
                             {workshop.workshopFoodDetails.length > 0 && (
-                                <div>
+                                <div className="mt-3">
                                     <p className="font-medium mb-1 flex items-center">
                                         <Pizza className="h-4 w-4 mr-1" /> Các Món Ăn Có Sẵn
                                     </p>
                                     <ul className="text-sm text-gray-600 space-y-1 mt-2">
                                         {workshop.workshopFoodDetails.map((food) => (
                                             <li key={food.id}>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>{food.name}</span>
-                                                    <span>{food.price.toLocaleString()} VND</span>
-                                                </div>
+
                                                 <ProductDetails productId={food.productId} />
                                             </li>
                                         ))}

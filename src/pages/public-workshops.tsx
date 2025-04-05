@@ -1,13 +1,12 @@
-
-
 import { useState, useEffect } from "react"
 import { Calendar, Loader2, Clock, AlertCircle, Flame } from "lucide-react"
-
 import { useAuth } from "../contexts/AuthContext"
 import { workshopService, type Workshop, WorkshopStatus } from "../services/workshop-service"
 import WorkshopComponent from "./components/WorkshopComponent"
 import WorkshopRegistrationForm from "./components/WorkshopRegistrationForm"
 import { ToastContainer } from "react-toastify"
+import makepizza from '@/assets/makepizza.jpg'
+import ScrollToTop from "@/components/scroll-to-top"
 
 export default function PublicWorkshops() {
     const { isAuthenticated } = useAuth()
@@ -108,11 +107,23 @@ export default function PublicWorkshops() {
 
     return (
         <>
-            <div className="container mx-auto px-4 py-12">
-                <ToastContainer />
-                <div className="text-center mb-12">
+
+            <ToastContainer />
+            <div className="container mx-auto px-4 py-12 ">
+                <div
+                    className="fixed inset-0 -z-10 bg-cover bg-center"
+                    style={{
+                        backgroundImage: `url(${makepizza})`,
+                        backgroundAttachment: "fixed",         // 👈 giữ ảnh cố định khi scroll
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "cover",
+                        backgroundPosition: "bottom",
+                        filter: "brightness(0.4)",
+                    }}
+                />
+                <div className="text-center mb-12 text-white">
                     <h1 className="text-4xl font-bold mb-4">Các Khóa Học Làm Bánh Pizza Sắp Tới</h1>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="max-w-2xl mx-auto text-white">
                         Khám phá các khóa học làm bánh pizza đã lên lịch và lên kế hoạch cho cuộc phiêu lưu ẩm thực của bạn. Học các
                         kỹ thuật chính thống từ các đầu bếp hàng đầu của chúng tôi trong một môi trường vui vẻ và tương tác.
                     </p>
@@ -149,10 +160,10 @@ export default function PublicWorkshops() {
                 {!isLoading && !error && workshops.length > 0 && (
                     <>
                         <div className="mb-6">
-                            <p className="text-gray-600">
+                            <p className="text-white">
                                 Hiển thị {workshops.length} khóa học đã lên lịch (Tổng số khóa học: {totalCount})
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-white">
                                 {upcomingWorkshops.length} khóa học sắp diễn ra • {regularWorkshops.length} khóa học khác
                             </p>
                         </div>
@@ -203,7 +214,7 @@ export default function PublicWorkshops() {
                         {/* Regular Workshops Section */}
                         {regularWorkshops.length > 0 && (
                             <div className="mt-10">
-                                <h2 className="text-xl font-bold mb-4 flex items-center">
+                                <h2 className="text-xl font-bold mb-4 flex items-center text-white">
                                     <Calendar className="h-5 w-5 mr-2 text-primary" />
                                     Các Khóa Học Khác ({regularWorkshops.length})
                                 </h2>
@@ -235,6 +246,7 @@ export default function PublicWorkshops() {
                     }}
                 />
             )}
+            <ScrollToTop />
         </>
     )
 }

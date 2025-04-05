@@ -30,11 +30,11 @@ export default function ScrollToTop() {
     }, [])
 
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 right-8 z-50">
             {isVisible && (
                 <Button
                     onClick={scrollToTop}
-                    size="icon"
+                    size="custome"
                     className="rounded-full bg-primary hover:bg-primary/90 shadow-lg transition-all duration-300 animate-fade-up"
                     aria-label="Scroll to top"
                 >
