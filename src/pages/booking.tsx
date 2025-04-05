@@ -1,5 +1,5 @@
 import BookingForm from "@/components/booking-form";
-
+import pizza from "@/assets/pizzwindown.jpg";
 export default function Booking() {
     return (
         <div className="h-screen flex flex-col bg-gray-50">
@@ -16,11 +16,12 @@ export default function Booking() {
 
                     <div className="grid md:grid-cols-2 gap-6 items-start">
                         <div className="bg-white rounded-lg shadow-lg overflow-hidden h-[615px]">
-                            <div className="h-36 md:h-44 overflow-hidden">
+                            <div className="h-36 md:h-60 overflow-hidden">
                                 <img
-                                    src="/placeholder.svg?height=600&width=800"
+                                    src={pizza}
                                     alt="Không gian nhà hàng"
                                     className="w-full h-full object-cover"
+                                    style={{ objectPosition: "10% 100%" }}
                                 />
                             </div>
                             <div className="p-6 flex flex-col mt-2">

@@ -7,6 +7,7 @@ import type ApiResponse from "@/apis/apiUtils"
 export interface BookingFormData {
     customerName: string
     phoneNumber: string
+    phoneOtp: string
     bookingTime: string
     numberOfPeople: number
 }
