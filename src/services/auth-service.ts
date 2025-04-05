@@ -94,6 +94,26 @@ class AuthService {
             throw error
         }
     }
+    // Send OTP to Phone number
+    async sendOtp(phoneNumber: string): Promise<ApiResponse<unknown>> {
+        try {
+            return await post<unknown>(API_ENDPOINTS.AUTH.SEND_OTP, { phoneNumber })
+        } catch (error) {
+            console.error(`Lỗi khi gửi OTP đến số điện thoại ${phoneNumber}:`, error)
+            throw error
+        }
+    }
+    /**
+     * Verify OTP
+     */
+    async verifyOtp(phoneNumber: string, otp: string): Promise<ApiResponse<unknown>> {
+        try {
+            return await post<unknown>(API_ENDPOINTS.AUTH.VERIFY_OTP, { phoneNumber, otp })
+        } catch (error) {
+            console.error(`Lỗi khi xác thực OTP:`, error)
+            throw error
+        }
+    }
 }
 
 

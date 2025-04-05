@@ -5,8 +5,9 @@ export const API_ENDPOINTS = {
         LOGIN: "/auth/customer/login",
         REGISTER: "/auth/customer/register",
         SENDCODE: "/auth/customer/send-verify-code",
-        VERIFYMAIL: "/auth/customer/verify-email"
-
+        VERIFYMAIL: "/auth/customer/verify-email",
+        SEND_OTP: "/auth/customer/send-otp-phone",
+        VERIFY_OTP: "/auth/customer/is-phone-otp",
     },
 
     // Customer endpoints
@@ -35,10 +36,11 @@ export const API_ENDPOINTS = {
 
     // Workshop endpoints
     WORKSHOP: {
-        GET_WORKSHOP: "/workshops?IncludeProperties=WorkshopFoodDetails",
+        GET_WORKSHOP: "/workshops?SortBy=CreatedDate%20desc&IncludeProperties=WorkshopFoodDetails",
         DETAILS: (id: string) => `/workshops/${id}?includeProperties=WorkshopFoodDetails`,
         WORKSHOP_REGISTER: "/workshop-register",
         MY_BOOKINGS: "/workshop-bookings",
+        CUSTOMER_WORKSHOPS: (id: string) => `/workshop-register?PhoneNumber=${id}&SortBy=CreatedDate%20desc`
     },
 
     RESERVATION: {

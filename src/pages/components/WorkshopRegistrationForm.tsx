@@ -1,28 +1,26 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
-import { useAuth } from "@/contexts/AuthContext"
-import {
-    workshopService,
-    type Workshop,
-    type WorkshopRegistration,
-    type ProductSelection
-} from "@/services/workshop-service"
-import { productService, type Product } from "@/services/product-service"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog"
+import { X, Loader2, AlertCircle, Check, Phone, ArrowRight, Users, Calendar, DollarSign, Pizza } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, AlertCircle, Check } from 'lucide-react'
-import { toast, ToastContainer } from "react-toastify"
+import {
+    workshopService,
+    type Workshop,
+    type WorkshopRegistration,
+    type ProductSelection,
+
+    CustomerWorkshopResponse,
+} from "@/services/workshop-service"
+import { productService, type Product } from "@/services/product-service"
+import { authService } from "@/services/auth-service"
+import CustomerWorkshopList from "./CustomerWorkshopList"
+import ApiResponse from "@/apis/apiUtils"
+import { toast } from "react-toastify"
 
 interface WorkshopRegistrationFormProps {
     workshop: Workshop
@@ -30,12 +28,26 @@ interface WorkshopRegistrationFormProps {
     onClose: () => void
 }
 
-export default function WorkshopRegistrationForm({
-    workshop,
-    isOpen,
-    onClose
-}: WorkshopRegistrationFormProps) {
-    const { user } = useAuth()
+// Enum for form steps
+enum FormStep {
+    PHONE_INPUT = 0,
+    OTP_VERIFICATION = 1,
+    REGISTRATION_FORM = 2,
+}
+
+export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: WorkshopRegistrationFormProps) {
+    // Form step state
+    const [currentStep, setCurrentStep] = useState<FormStep>(FormStep.PHONE_INPUT)
+
+    // Phone verification states
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [otp, setOtp] = useState("")
+    const [, setIsPhoneVerified] = useState(false)
+    const [isSendingOtp, setIsSendingOtp] = useState(false)
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
+    const [otpError, setOtpError] = useState<string | null>(null)
+
+    // Main form states
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -43,11 +55,42 @@ export default function WorkshopRegistrationForm({
     const [totalParticipants, setTotalParticipants] = useState(1)
     const [selectedProducts, setSelectedProducts] = useState<Map<string, Set<string>>>(new Map())
     const [productDetails, setProductDetails] = useState<Map<string, Product>>(new Map())
+    const [guestInfo, setGuestInfo] = useState({
+        name: "",
+        email: "",
+        phone: "",
+    })
+
+    // Customer workshop history states
+    const [customerWorkshops, setCustomerWorkshops] = useState<ApiResponse<CustomerWorkshopResponse> | null>(null)
+    const [, setIsLoadingWorkshops] = useState(false)
+    const [showWorkshopHistory, setShowWorkshopHistory] = useState(false)
+    const [, setRegistrationConfirmed] = useState(false)
+    const [registrationData, setRegistrationData] = useState<WorkshopRegistration | null>(null)
+
+    // Check if there's a verified phone in localStorage on mount
+    useEffect(() => {
+        const verifiedPhone = localStorage.getItem("verified_phone")
+        const verifiedOtp = localStorage.getItem("verified_otp")
+
+        if (verifiedPhone && verifiedOtp) {
+            setPhoneNumber(verifiedPhone)
+            setOtp(verifiedOtp)
+            setIsPhoneVerified(true)
+            setCurrentStep(FormStep.REGISTRATION_FORM)
+
+            // Update guest info with the phone number
+            setGuestInfo((prev) => ({
+                ...prev,
+                phone: verifiedPhone,
+            }))
+        }
+    }, [])
 
     // Fetch product details for all workshop food options
     useEffect(() => {
         const fetchProductDetails = async () => {
-            if (!workshop || !workshop.workshopFoodDetails.length) return
+            if (!workshop || !workshop.workshopFoodDetails.length || currentStep !== FormStep.REGISTRATION_FORM) return
 
             setIsLoading(true)
             setError(null)
@@ -65,24 +108,117 @@ export default function WorkshopRegistrationForm({
                             productSelections.set(food.productId, new Set<string>())
                         }
                     } catch (err) {
-                        console.error(`Error fetching product ${food.productId}:`, err)
+                        console.error(`Lỗi khi tải sản phẩm ${food.productId}:`, err)
                     }
                 }
 
                 setProductDetails(productMap)
                 setSelectedProducts(productSelections)
             } catch (err) {
-                console.error("Error fetching product details:", err)
-                setError("Failed to load product details")
+                console.error("Lỗi khi tải thông tin sản phẩm:", err)
+                setError("Không thể tải thông tin sản phẩm")
             } finally {
                 setIsLoading(false)
             }
         }
 
-        if (isOpen) {
+        if (isOpen && currentStep === FormStep.REGISTRATION_FORM) {
             fetchProductDetails()
         }
-    }, [workshop, isOpen])
+    }, [workshop, isOpen, currentStep])
+
+    // Handle phone number input
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Only allow digits
+        const value = e.target.value.replace(/\D/g, "")
+        setPhoneNumber(value)
+        setOtpError(null)
+    }
+
+    // Handle OTP input
+    const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Only allow digits
+        const value = e.target.value.replace(/\D/g, "")
+        setOtp(value)
+        setOtpError(null)
+    }
+
+    // Send OTP to phone number
+    const handleSendOtp = async () => {
+        if (!phoneNumber || phoneNumber.length < 10) {
+            setOtpError("Vui lòng nhập số điện thoại hợp lệ")
+            return
+        }
+
+        setIsSendingOtp(true)
+        setOtpError(null)
+
+        try {
+            // Call the API to send OTP
+            const response = await authService.sendOtp(phoneNumber)
+
+            if (response.success) {
+                // Move to OTP verification step
+                setCurrentStep(FormStep.OTP_VERIFICATION)
+            } else {
+                setOtpError(response.message || "Không thể gửi mã OTP. Vui lòng thử lại.")
+            }
+        } catch (err) {
+            console.error("Lỗi khi gửi OTP:", err)
+            setOtpError("Đã xảy ra lỗi khi gửi mã OTP. Vui lòng thử lại.")
+        } finally {
+            setIsSendingOtp(false)
+        }
+    }
+
+    // Verify OTP
+    const handleVerifyOtp = async () => {
+        if (!otp || otp.length < 4) {
+            setOtpError("Vui lòng nhập mã OTP hợp lệ")
+            return
+        }
+
+        setIsVerifyingOtp(true)
+        setOtpError(null)
+
+        try {
+            // Call the API to verify OTP
+            const response = await authService.verifyOtp(phoneNumber, otp)
+
+            if (response.success) {
+                // Store verified phone and OTP in localStorage
+                localStorage.setItem("verified_phone", phoneNumber)
+                localStorage.setItem("verified_otp", otp)
+
+                // Update state
+                setIsPhoneVerified(true)
+
+                // Update guest info with the phone number
+                setGuestInfo((prev) => ({
+                    ...prev,
+                    phone: phoneNumber,
+                }))
+
+                // Move to registration form step
+                setCurrentStep(FormStep.REGISTRATION_FORM)
+            } else {
+                setOtpError(response.message || "Mã OTP không hợp lệ. Vui lòng thử lại.")
+            }
+        } catch (err) {
+            console.error("Lỗi khi xác thực OTP:", err)
+            setOtpError("Đã xảy ra lỗi khi xác thực mã OTP. Vui lòng thử lại.")
+        } finally {
+            setIsVerifyingOtp(false)
+        }
+    }
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        setGuestInfo((prev) => ({
+            ...prev,
+            [name]: value,
+        }))
+    }
 
     // Toggle product selection
     const toggleProductSelection = (productId: string) => {
@@ -125,13 +261,67 @@ export default function WorkshopRegistrationForm({
         return productOptions ? productOptions.has(optionItemId) : false
     }
 
-    // Handle form submission
-    const handleSubmit = async () => {
-        if (!user?.CustomerId) {
-            setError("User information not found. Please log in again.")
-            return
-        }
+    // Fetch customer workshop history
+    const fetchCustomerWorkshops = async () => {
+        if (!phoneNumber) return
 
+        setIsLoadingWorkshops(true)
+        try {
+            const response = await workshopService.getWorkshopByPhoneCustomer(phoneNumber)
+            if (response.success) {
+                if (response.result) {
+
+                    setCustomerWorkshops(response)
+                }
+            } else {
+                console.error("Không thể tải lịch sử đăng ký:", response.message)
+                setCustomerWorkshops(null)
+            }
+        } catch (err) {
+            console.error("Lỗi khi tải lịch sử đăng ký:", err)
+            setCustomerWorkshops(null)
+        } finally {
+            setIsLoadingWorkshops(false)
+        }
+    }
+
+    // Xử lý khi người dùng xác nhận đăng ký tiếp
+    const handleConfirmRegistration = async () => {
+        if (!registrationData) return
+
+        setIsSubmitting(true)
+        setError(null)
+
+        try {
+            // Gửi dữ liệu đăng ký
+            const response = await workshopService.workShopRegistration(registrationData)
+            console.log("Đăng ký khóa học:", response);
+
+            if (response.success) {
+                toast.success("Đăng ký Workshop thành công!")
+                setSuccess("Đăng ký khóa học thành công!")
+                setRegistrationConfirmed(true)
+
+                // Đóng popup sau một khoảng thời gian
+                setTimeout(() => {
+                    setShowWorkshopHistory(false)
+                    onClose()
+                }, 2000)
+            } else {
+                toast.error("Đăng ký Workshop thất bại!")
+                setError(response.message || "Đăng ký thất bại")
+            }
+        } catch (err) {
+            console.error("Lỗi đăng ký:", err)
+            setError("Đã xảy ra lỗi trong quá trình đăng ký")
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    // Handle form submission
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
         setIsSubmitting(true)
         setError(null)
         setSuccess(null)
@@ -141,181 +331,479 @@ export default function WorkshopRegistrationForm({
             const products: ProductSelection[] = []
 
             selectedProducts.forEach((optionItems, productId) => {
+                // Thêm tất cả sản phẩm đã chọn vào danh sách
                 products.push({
                     productId,
-                    optionItemIds: Array.from(optionItems)
+                    optionItemIds: Array.from(optionItems),
                 })
             })
 
-            // Prepare registration data
-            const registrationData: WorkshopRegistration = {
-                customerId: user.CustomerId,
+            // Cập nhật cấu trúc dữ liệu đăng ký theo yêu cầu mới
+            const data: WorkshopRegistration = {
+                phoneNumber: phoneNumber,
+                phoneOtp: otp,
                 workshopId: workshop.id,
                 totalParticipant: totalParticipants,
-                products
+                email: guestInfo.email,
+                customerName: guestInfo.name,
+                products,
             }
 
-            console.log("Submitting registration data:", registrationData)
+            // Lưu dữ liệu đăng ký để sử dụng sau khi xác nhận
+            setRegistrationData(data)
 
-            // Submit registration
-            const response = await workshopService.workShopRegistration(registrationData)
+            console.log("Đang chuẩn bị dữ liệu đăng ký:", data)
 
-            if (response.success) {
-                setSuccess("Workshop registration successful!")
-                toast.success("You have successfully registered for the workshop!", {
-                    position: "top-right",
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                })
+            // Lưu thông tin khách vào localStorage để sử dụng sau này
+            localStorage.setItem(
+                "guest_info",
+                JSON.stringify({
+                    name: guestInfo.name,
+                    email: guestInfo.email,
+                    phone: phoneNumber,
+                }),
+            )
 
-                // Close dialog after a short delay
-                setTimeout(() => {
-                    onClose()
-                }, 2000)
-            } else {
-                setError(response.message || "Registration failed")
-            }
+            // Khởi tạo dữ liệu trước khi fetch để tránh lỗi
+            setCustomerWorkshops(null)
+
+            // Fetch customer workshop history trước khi hiển thị popup
+            await fetchCustomerWorkshops()
+
+            // Show workshop history popup với xác nhận đăng ký
+            setShowWorkshopHistory(true)
         } catch (err) {
-            console.error("Registration error:", err)
-            setError("An error occurred during registration")
+            console.error("Lỗi chuẩn bị đăng ký:", err)
+            setError("Đã xảy ra lỗi trong quá trình chuẩn bị đăng ký")
         } finally {
             setIsSubmitting(false)
         }
     }
 
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <ToastContainer />
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Register for Workshop</DialogTitle>
-                    <DialogDescription>
-                        Complete your registration for "{workshop.name}"
-                    </DialogDescription>
-                </DialogHeader>
+    // Reset form when closing
+    const handleClose = () => {
+        // Only reset if not in the middle of registration form
+        if (currentStep !== FormStep.REGISTRATION_FORM) {
+            setCurrentStep(FormStep.PHONE_INPUT)
+            setPhoneNumber("")
+            setOtp("")
+            setOtpError(null)
+        }
+        onClose()
+    }
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-                        <span>Loading product options...</span>
-                    </div>
-                ) : error ? (
-                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md flex items-start">
-                        <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                        <p>{error}</p>
-                    </div>
-                ) : (
-                    <>
-                        {success && (
-                            <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md flex items-start mb-4">
-                                <Check className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                                <p>{success}</p>
+    if (!isOpen) return null
+
+    // Render different content based on current step
+    const renderStepContent = () => {
+        switch (currentStep) {
+            case FormStep.PHONE_INPUT:
+                return (
+                    <div className="p-4">
+                        <div className="mb-6 text-center">
+                            <Phone className="h-12 w-12 text-primary mx-auto mb-2" />
+                            <h3 className="text-lg font-medium">Xác thực số điện thoại</h3>
+                            <p className="text-sm text-gray-500 mb-2">Vui lòng nhập số điện thoại của bạn để nhận mã xác thực</p>
+                            <div className="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-md text-sm">
+                                <p>
+                                    <strong>Lưu ý:</strong> Vui lòng nhập đúng số điện thoại của bạn. Chúng tôi sẽ gửi mã xác thực qua SMS
+                                    để đảm bảo thông tin đăng ký chính xác.
+                                </p>
+                            </div>
+                        </div>
+
+                        {otpError && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md flex items-start mb-4">
+                                <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                                <p className="text-sm">{otpError}</p>
                             </div>
                         )}
 
                         <div className="space-y-4">
-                            {/* Participant Information */}
                             <div>
-                                <Label htmlFor="totalParticipants">Number of Participants</Label>
+                                <Label htmlFor="phoneNumber">Số điện thoại</Label>
                                 <Input
-                                    id="totalParticipants"
-                                    type="number"
-                                    min={1}
-                                    max={workshop.maxParticipantPerRegister}
-                                    value={totalParticipants}
-                                    onChange={(e) => setTotalParticipants(parseInt(e.target.value) || 1)}
+                                    id="phoneNumber"
+                                    type="tel"
+                                    placeholder="0912345678"
+                                    value={phoneNumber}
+                                    onChange={handlePhoneChange}
                                     className="mt-1"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Maximum {workshop.maxParticipantPerRegister} participants per registration
-                                </p>
+                                <p className="text-xs text-gray-500 mt-1">Nhập số điện thoại bắt đầu bằng số 0 (VD: 0912345678)</p>
                             </div>
 
-                            {/* Product Selection */}
-                            <div>
-                                <Label className="block mb-2">Select Products</Label>
-                                <div className="space-y-3 max-h-60 overflow-y-auto p-2 border rounded-md">
-                                    {workshop.workshopFoodDetails.map((food) => {
-                                        const product = productDetails.get(food.productId)
-                                        if (!product) return null
+                            <Button onClick={handleSendOtp} disabled={isSendingOtp || phoneNumber.length < 10} className="w-full">
+                                {isSendingOtp ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Đang gửi...
+                                    </>
+                                ) : (
+                                    <>
+                                        Gửi mã OTP
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )
 
-                                        return (
-                                            <div key={food.id} className="border p-3 rounded-md">
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <div className="font-medium">{food.name}</div>
-                                                        <div className="text-sm text-gray-600">{food.price.toLocaleString()} VND</div>
-                                                    </div>
-                                                    <Checkbox
-                                                        id={`product-${food.id}`}
-                                                        checked={isProductSelected(food.productId)}
-                                                        onCheckedChange={() => toggleProductSelection(food.productId)}
+            case FormStep.OTP_VERIFICATION:
+                return (
+                    <div className="p-4">
+                        <div className="mb-6 text-center">
+                            <div className="bg-primary/10 rounded-full p-3 w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+                                <Phone className="h-8 w-8 text-primary" />
+                            </div>
+                            <h3 className="text-lg font-medium">Nhập mã xác thực</h3>
+                            <p className="text-sm text-gray-500 mb-2">
+                                Chúng tôi đã gửi mã OTP đến số điện thoại <strong>{phoneNumber}</strong>
+                            </p>
+                            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-3 rounded-md text-sm">
+                                <p>
+                                    Vui lòng kiểm tra tin nhắn SMS trên điện thoại của bạn và nhập mã OTP vào ô bên dưới. Mã có hiệu lực
+                                    trong vòng 5 phút.
+                                </p>
+                            </div>
+                        </div>
+
+                        {otpError && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md flex items-start mb-4">
+                                <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                                <p className="text-sm">{otpError}</p>
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="otp">Mã OTP</Label>
+                                <Input
+                                    id="otp"
+                                    type="text"
+                                    placeholder="Nhập mã OTP"
+                                    value={otp}
+                                    onChange={handleOtpChange}
+                                    className="mt-1 text-center text-lg tracking-widest"
+                                    maxLength={6}
+                                />
+                            </div>
+
+                            <div className="flex justify-between">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setCurrentStep(FormStep.PHONE_INPUT)
+                                        setOtp("")
+                                        setOtpError(null)
+                                    }}
+                                >
+                                    Quay lại
+                                </Button>
+
+                                <Button onClick={handleVerifyOtp} disabled={isVerifyingOtp || otp.length < 4}>
+                                    {isVerifyingOtp ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Đang xác thực...
+                                        </>
+                                    ) : (
+                                        "Xác thực"
+                                    )}
+                                </Button>
+                            </div>
+
+                            <div className="text-center mt-4">
+                                <p className="text-sm text-gray-500 mb-2">Không nhận được mã?</p>
+                                <button
+                                    type="button"
+                                    onClick={handleSendOtp}
+                                    disabled={isSendingOtp}
+                                    className="text-primary text-sm hover:underline"
+                                >
+                                    {isSendingOtp ? (
+                                        <>
+                                            <Loader2 className="inline mr-1 h-3 w-3 animate-spin" />
+                                            Đang gửi lại...
+                                        </>
+                                    ) : (
+                                        "Gửi lại mã OTP"
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+
+            case FormStep.REGISTRATION_FORM:
+                return (
+                    <form onSubmit={handleSubmit} className="p-4">
+                        {isLoading ? (
+                            <div className="flex justify-center items-center py-8">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+                                <span>Đang tải tùy chọn sản phẩm...</span>
+                            </div>
+                        ) : error ? (
+                            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md flex items-start">
+                                <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                                <p>{error}</p>
+                            </div>
+                        ) : (
+                            <>
+                                {success && (
+                                    <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md flex items-start mb-4">
+                                        <Check className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                                        <p>{success}</p>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Cột bên trái: Thông tin người đăng ký */}
+                                    <div className="space-y-4">
+                                        <div className="bg-primary/5 p-3 rounded-md border border-primary/20">
+                                            <h5 className="font-medium flex items-center text-primary">
+                                                <Users className="h-4 w-4 mr-2" />
+                                                Thông tin người đăng ký
+                                            </h5>
+
+                                            <div className="mt-3 space-y-3">
+                                                <div>
+                                                    <Label htmlFor="name">Họ và tên</Label>
+                                                    <Input
+                                                        id="name"
+                                                        name="name"
+                                                        value={guestInfo.name}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Nguyễn Văn A"
+                                                        required
                                                     />
                                                 </div>
 
-                                                {isProductSelected(food.productId) && product.options && product.options.length > 0 && (
-                                                    <div className="mt-2 pl-4 border-t pt-2">
-                                                        <p className="text-sm font-medium mb-1">Options:</p>
-                                                        {product.options.map((option) => (
-                                                            <div key={option.id} className="mb-2">
-                                                                <p className="text-sm">{option.name}</p>
-                                                                <div className="pl-2 space-y-1">
-                                                                    {option.optionItems.map((item) => (
-                                                                        <div key={item.id} className="flex items-center justify-between">
-                                                                            <div className="flex items-center">
-                                                                                <Checkbox
-                                                                                    id={`option-${item.id}`}
-                                                                                    checked={isOptionItemSelected(food.productId, item.id)}
-                                                                                    onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
-                                                                                />
-                                                                                <Label htmlFor={`option-${item.id}`} className="ml-2 text-sm">
-                                                                                    {item.name}
-                                                                                </Label>
+                                                <div>
+                                                    <Label htmlFor="email">Email</Label>
+                                                    <Input
+                                                        id="email"
+                                                        name="email"
+                                                        type="email"
+                                                        value={guestInfo.email}
+                                                        onChange={handleInputChange}
+                                                        placeholder="example@gmail.com"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Label htmlFor="phone">Số điện thoại</Label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            id="phone"
+                                                            name="phone"
+                                                            type="tel"
+                                                            value={guestInfo.phone}
+                                                            readOnly
+                                                            className="bg-gray-50 pr-8"
+                                                        />
+                                                        <Check className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+                                                    </div>
+                                                    <p className="text-xs text-green-600 flex items-center mt-1">
+                                                        <Check className="h-3 w-3 mr-1" />
+                                                        Số điện thoại đã được xác thực
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <Label htmlFor="totalParticipants">Số lượng người tham gia</Label>
+                                                    <Input
+                                                        id="totalParticipants"
+                                                        type="number"
+                                                        min={1}
+                                                        max={workshop.maxParticipantPerRegister}
+                                                        value={totalParticipants}
+                                                        onChange={(e) => setTotalParticipants(Number.parseInt(e.target.value) || 1)}
+                                                    />
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        Tối đa {workshop.maxParticipantPerRegister} người mỗi đăng ký
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Thông tin tổng quan về khóa học */}
+                                        <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
+                                            <h5 className="font-medium flex items-center text-blue-700">
+                                                <Calendar className="h-4 w-4 mr-2" />
+                                                Thông tin khóa học
+                                            </h5>
+                                            <div className="mt-3 space-y-2 text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Tên khóa học:</span>
+                                                    <span className="font-medium">{workshop.name}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Ngày diễn ra:</span>
+                                                    <span>{new Date(workshop.workshopDate).toLocaleDateString("vi-VN")}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Địa điểm:</span>
+                                                    <span>{workshop.location}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Tổng chi phí */}
+                                        <div className="bg-gray-50 p-3 rounded-md border">
+                                            <h5 className="font-medium flex items-center">
+                                                <DollarSign className="h-4 w-4 mr-2" />
+                                                Chi phí
+                                            </h5>
+                                            <div className="mt-3 space-y-2">
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Phí tham gia:</span>
+                                                    <span>{workshop.totalFee.toLocaleString()} VND / người</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Số lượng người:</span>
+                                                    <span>{totalParticipants} người</span>
+                                                </div>
+                                                <div className="border-t pt-2 mt-2">
+                                                    <div className="flex justify-between font-bold">
+                                                        <span>Tổng cộng:</span>
+                                                        <span className="text-primary">
+                                                            {(totalParticipants * workshop.totalFee).toLocaleString()} VND
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Cột bên phải: Chọn sản phẩm */}
+                                    <div>
+                                        <div className="bg-primary/5 p-3 rounded-md border border-primary/20 h-full">
+                                            <h5 className="font-medium flex items-center text-primary">
+                                                <Pizza className="h-4 w-4 mr-2" />
+                                                Chọn sản phẩm
+                                            </h5>
+                                            <p className="text-xs text-gray-600 mt-1 mb-3">
+                                                Chọn các sản phẩm bạn muốn làm trong khóa học và tùy chọn đi kèm
+                                            </p>
+
+                                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                                                {workshop.workshopFoodDetails.map((food) => {
+                                                    const product = productDetails.get(food.productId)
+                                                    if (!product) return null
+
+                                                    return (
+                                                        <div key={food.id} className="border bg-white p-3 rounded-md">
+                                                            <div className="flex items-start justify-between">
+                                                                <div>
+                                                                    <div className="font-medium">{food.name}</div>
+                                                                    <div className="text-sm text-gray-600">{food.price.toLocaleString()} VND</div>
+                                                                </div>
+                                                                <Checkbox
+                                                                    id={`product-${food.id}`}
+                                                                    checked={isProductSelected(food.productId)}
+                                                                    onCheckedChange={() => toggleProductSelection(food.productId)}
+                                                                />
+                                                            </div>
+
+                                                            {isProductSelected(food.productId) && product.options && product.options.length > 0 && (
+                                                                <div className="mt-2 border-t pt-2">
+                                                                    <p className="text-xs font-medium mb-1 text-primary">Tùy chọn thêm:</p>
+                                                                    {product.options.map((option) => (
+                                                                        <div key={option.id} className="mb-2">
+                                                                            <p className="text-xs font-medium">{option.name}</p>
+                                                                            <div className="grid grid-cols-2 gap-1 mt-1">
+                                                                                {option.optionItems.map((item) => (
+                                                                                    <div
+                                                                                        key={item.id}
+                                                                                        className="flex items-center justify-between bg-gray-50 p-1 rounded"
+                                                                                    >
+                                                                                        <div className="flex items-center">
+                                                                                            <Checkbox
+                                                                                                id={`option-${item.id}`}
+                                                                                                checked={isOptionItemSelected(food.productId, item.id)}
+                                                                                                onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
+                                                                                                className="h-3 w-3"
+                                                                                            />
+                                                                                            <Label htmlFor={`option-${item.id}`} className="ml-1 text-xs">
+                                                                                                {item.name}
+                                                                                            </Label>
+                                                                                        </div>
+                                                                                        {item.additionalPrice > 0 && (
+                                                                                            <span className="text-xs text-primary">
+                                                                                                +{item.additionalPrice.toLocaleString()}
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                ))}
                                                                             </div>
-                                                                            {item.additionalPrice > 0 && (
-                                                                                <span className="text-xs text-primary">
-                                                                                    +{item.additionalPrice.toLocaleString()} VND
-                                                                                </span>
-                                                                            )}
                                                                         </div>
                                                                     ))}
                                                                 </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })}
                                             </div>
-                                        )
-                                    })}
+                                        </div>
+                                    </div>
                                 </div>
+                            </>
+                        )}
+
+                        <div className="border-t pt-4 mt-6">
+                            <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+                                    Hủy
+                                </Button>
+                                <Button type="submit" disabled={isLoading || isSubmitting} className="bg-primary hover:bg-primary/90">
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Đang xử lý...
+                                        </>
+                                    ) : (
+                                        "Hoàn Tất Đăng Ký"
+                                    )}
+                                </Button>
                             </div>
                         </div>
-                    </>
-                )}
+                    </form>
+                )
+        }
+    }
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={isLoading || isSubmitting}
-                        className="bg-primary hover:bg-primary/90"
-                    >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Submitting...
-                            </>
-                        ) : (
-                            "Complete Registration"
-                        )}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+    return (
+        <>
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
+                        <h3 className="text-lg font-semibold">
+                            {currentStep === FormStep.REGISTRATION_FORM ? "Đăng Ký Khóa Học" : "Xác Thực Số Điện Thoại"}
+                        </h3>
+                        <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
+                            <X className="h-5 w-5" />
+                        </button>
+                    </div>
+
+                    {renderStepContent()}
+                </div>
+            </div>
+
+            {/* Popup hiển thị lịch sử đăng ký workshop */}
+            <CustomerWorkshopList
+                workshops={customerWorkshops}
+                isOpen={showWorkshopHistory}
+                onClose={() => {
+                    setShowWorkshopHistory(false)
+                    onClose()
+                }}
+                currentWorkshop={workshop}
+                onConfirmRegistration={handleConfirmRegistration}
+            />
+        </>
     )
 }
+

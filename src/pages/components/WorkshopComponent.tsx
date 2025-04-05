@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { format } from "date-fns"
-import { Calendar, MapPin, Users, Phone, Clock, DollarSign, Pizza } from "lucide-react"
+import { Calendar, MapPin, Users, Phone, Clock, DollarSign, Pizza, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Workshop } from "@/services/workshop-service"
-import { Link } from "react-router-dom"
 import ProductDetails from "./ProductDetail"
+import { getWorkshopStatusVi } from "@/constants/workshop"
 
 // Status color mapping
 const statusColorMap: Record<string, string> = {
@@ -23,9 +23,19 @@ interface WorkshopProps {
     workshop: Workshop
     onRegister?: (workshop: Workshop) => void
     isAuthenticated?: boolean
+    isUpcoming?: boolean
+    daysRemaining?: number
+    highlightStyle?: "amber" | "blue" | "none"
 }
 
-export default function WorkshopComponent({ workshop, onRegister, isAuthenticated = false }: WorkshopProps) {
+export default function WorkshopComponent({
+    workshop,
+    onRegister,
+
+    isUpcoming = false,
+    daysRemaining = 0,
+    highlightStyle = "none",
+}: WorkshopProps) {
     const [isExpanded, setIsExpanded] = useState(false)
 
     // Format dates for display
@@ -34,8 +44,8 @@ export default function WorkshopComponent({ workshop, onRegister, isAuthenticate
             return format(new Date(dateString), "PPP")
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error("Invalid date:", dateString)
-            return "Invalid date"
+            console.error("Ngày không hợp lệ:", dateString)
+            return "Ngày không hợp lệ"
         }
     }
 
@@ -44,8 +54,8 @@ export default function WorkshopComponent({ workshop, onRegister, isAuthenticate
             return format(new Date(dateString), "PPP p")
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error("Invalid date:", dateString)
-            return "Invalid date"
+            console.error("Ngày không hợp lệ:", dateString)
+            return "Ngày không hợp lệ"
         }
     }
 
@@ -56,87 +66,162 @@ export default function WorkshopComponent({ workshop, onRegister, isAuthenticate
         }
     }
 
+    // Xác định các class dựa trên highlightStyle
+    const getCardClass = () => {
+        const baseClass = "w-full overflow-hidden transition-all duration-300 hover:shadow-lg"
+
+        switch (highlightStyle) {
+            case "amber":
+                return `${baseClass} border-amber-300 shadow-md`
+            case "blue":
+                return `${baseClass} border-blue-300 shadow-md`
+            default:
+                return baseClass
+        }
+    }
+
+    const getHeaderClass = () => {
+        switch (highlightStyle) {
+            case "amber":
+                return "bg-gradient-to-r from-amber-50 to-white"
+            case "blue":
+                return "bg-gradient-to-r from-blue-50 to-white"
+            default:
+                return ""
+        }
+    }
+
+    const getButtonClass = () => {
+        switch (highlightStyle) {
+            case "amber":
+                return "bg-amber-500 hover:bg-amber-600"
+            case "blue":
+                return "bg-blue-500 hover:bg-blue-600"
+            default:
+                return daysRemaining > 0 && daysRemaining <= 14
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-primary hover:bg-primary/90"
+        }
+    }
+
     return (
-        <Card className="w-full overflow-hidden transition-all duration-300 hover:shadow-lg">
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-xl font-bold">{workshop.name}</CardTitle>
-                        <CardDescription className="mt-1">{workshop.header}</CardDescription>
-                    </div>
-                    <Badge className={`${statusColorMap[workshop.workshopStatus] || "bg-gray-500"} text-white`}>
-                        {workshop.workshopStatus}
+        <Card className={getCardClass()}>
+            <CardHeader className={`pb-2 ${getHeaderClass()}`}>
+
+                <div className="flex flex-col items-start p-7">
+                    <CardTitle className="text-xl font-bold pr-24">{workshop.name}</CardTitle>
+                    <div className="mt-2">{workshop.header}</div>
+                </div>
+                <div className="flex items-center space-x-2">
+                    {daysRemaining > 0 && daysRemaining <= 14 && !isUpcoming && (
+                        <Badge className="bg-blue-500 text-white whitespace-nowrap">
+                            {daysRemaining <= 7 ? `Còn ${daysRemaining} ngày` : "Sắp diễn ra"}
+                        </Badge>
+                    )}
+                    <Badge
+                        className={`${statusColorMap[workshop.workshopStatus] || "bg-gray-500"} text-white p-2 px-3 whitespace-nowrap absolute right-5`}
+                        style={{ top: "1.5rem" }}
+                    >
+                        {getWorkshopStatusVi(workshop.workshopStatus)}
                     </Badge>
                 </div>
+
+
             </CardHeader>
-            <CardContent className="pb-3">
-                <div className="space-y-3">
-                    <div className="flex items-start">
-                        <Calendar className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="font-medium">Workshop Date</p>
-                            <p className="text-sm text-gray-600">{formatDateTime(workshop.workshopDate)}</p>
+            <CardContent className="pb-3 mx-4">
+                <div className="mt-3">
+                    {daysRemaining > 0 && daysRemaining <= 14 && !isUpcoming && (
+                        <div className=" bg-blue-50 p-2 rounded-md flex items-center text-sm text-blue-800">
+                            <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span>
+                                {daysRemaining <= 7
+                                    ? `Khóa học sẽ diễn ra trong ${daysRemaining} ngày nữa!`
+                                    : "Khóa học sẽ diễn ra trong vòng 2 tuần tới!"}
+                            </span>
                         </div>
+                    )}
+                    {isUpcoming && (
+                        <div className=" bg-amber-100 p-2 rounded-md flex items-center text-sm text-amber-800">
+                            <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span>
+                                {daysRemaining === 0
+                                    ? "Khóa học diễn ra hôm nay!"
+                                    : `Khóa học sẽ diễn ra trong ${daysRemaining} ngày nữa!`}
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="space-y-3 mt-3">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-start">
+                            <Calendar className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Ngày Diễn Ra</p>
+                                <p className="text-sm text-gray-600">{formatDateTime(workshop.workshopDate)}</p>
+                                <div></div>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <MapPin className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Địa Điểm</p>
+                                <p className="text-sm text-gray-600">{workshop.location}</p>
+                                <p className="text-sm text-gray-600">Khu vực: {workshop.zoneName}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Users className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Sức Chứa</p>
+                                <p className="text-sm text-gray-600">
+                                    Tối đa {workshop.maxParticipantPerRegister} người mỗi đăng ký (Tổng: {workshop.maxRegister})
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <DollarSign className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Phí Tham Gia</p>
+                                <p className="text-sm text-gray-600">{workshop.totalFee.toLocaleString()} VND</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <Clock className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Thời Gian Đăng Ký</p>
+                                <p className="text-sm text-gray-600">
+                                    Từ {formatDate(workshop.startRegisterDate)} đến {formatDate(workshop.endRegisterDate)}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start">
+                            <Phone className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Liên Hệ</p>
+                                <p className="text-sm text-gray-600">
+                                    {workshop.organizer} - {workshop.hotLineContact}
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div className="flex items-start">
-                        <MapPin className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="font-medium">Location</p>
-                            <p className="text-sm text-gray-600">{workshop.location}</p>
-                            <p className="text-sm text-gray-600">Zone: {workshop.zoneName}</p>
-                        </div>
-                    </div>
 
-                    <div className="flex items-start">
-                        <Users className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="font-medium">Capacity</p>
-                            <p className="text-sm text-gray-600">
-                                Max Participants: {workshop.maxParticipantPerRegister} per registration (Total: {workshop.maxRegister})
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start">
-                        <DollarSign className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="font-medium">Fee</p>
-                            <p className="text-sm text-gray-600">{workshop.totalFee.toLocaleString()} VND</p>
-                        </div>
-                    </div>
 
                     {isExpanded && (
-                        <>
-                            <div className="flex items-start">
-                                <Clock className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-medium">Registration Period</p>
-                                    <p className="text-sm text-gray-600">
-                                        From {formatDate(workshop.startRegisterDate)} to {formatDate(workshop.endRegisterDate)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start">
-                                <Phone className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-medium">Contact</p>
-                                    <p className="text-sm text-gray-600">
-                                        {workshop.organizer} - {workshop.hotLineContact}
-                                    </p>
-                                </div>
-                            </div>
+                        <div className="mt-3 px-3">
 
                             <div>
-                                <p className="font-medium mb-1">Description</p>
+                                <p className="font-medium mb-1">Mô Tả</p>
                                 <p className="text-sm text-gray-600">{workshop.description}</p>
                             </div>
 
                             {workshop.workshopFoodDetails.length > 0 && (
                                 <div>
                                     <p className="font-medium mb-1 flex items-center">
-                                        <Pizza className="h-4 w-4 mr-1" /> Available Food Options
+                                        <Pizza className="h-4 w-4 mr-1" /> Các Món Ăn Có Sẵn
                                     </p>
                                     <ul className="text-sm text-gray-600 space-y-1 mt-2">
                                         {workshop.workshopFoodDetails.map((food) => (
@@ -151,24 +236,18 @@ export default function WorkshopComponent({ workshop, onRegister, isAuthenticate
                                     </ul>
                                 </div>
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
             </CardContent>
-            <CardFooter className="flex justify-between pt-2">
+            <CardFooter className="flex justify-between pt-2 px-3 mx-4">
                 <Button variant="outline" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
-                    {isExpanded ? "Show Less" : "Show More"}
+                    {isExpanded ? "Thu Gọn" : "Xem Thêm"}
                 </Button>
 
-                {isAuthenticated ? (
-                    <Button className="bg-primary hover:bg-primary/90" onClick={handleRegisterClick}>
-                        Register Now
-                    </Button>
-                ) : (
-                    <Button asChild className="bg-primary hover:bg-primary/90">
-                        <Link to="/auth/login?redirect=workshops">Sign In to Register</Link>
-                    </Button>
-                )}
+                <Button className={getButtonClass()} onClick={handleRegisterClick}>
+                    Đăng Ký Ngay
+                </Button>
             </CardFooter>
         </Card>
     )

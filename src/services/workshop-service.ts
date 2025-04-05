@@ -50,12 +50,37 @@ export interface ProductSelection {
 }
 
 export interface WorkshopRegistration {
-    customerId: string
+    customerName: string,
+    phoneNumber: string,
+    phoneOtp: string,
+    email: string,
     workshopId: string
     totalParticipant: number
     products: ProductSelection[]
 }
-
+export type CustomerWorkshop = {
+    id: string
+    customerPhone: string
+    customerName: string
+    workshopId: string
+    workshop: null
+    workshopRegisterStatus: string
+    registeredAt: string
+    totalParticipant: number
+    orderId: null
+    order: null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    workshopPizzaRegisters: any[]
+    totalFee: number
+    code: string
+    tableId: null
+    tableCode: null
+    table: null
+}
+export type CustomerWorkshopResponse = {
+    items: CustomerWorkshop[];
+    totalCount: number;
+}
 /**
  * Workshop Service
  * Handles workshop-related API calls
@@ -111,6 +136,14 @@ class WorkshopService {
             return await post<unknown>(API_ENDPOINTS.WORKSHOP.WORKSHOP_REGISTER, data, { headers })
         } catch (error) {
             console.error(`Error register workshop `)
+            throw error
+        }
+    }
+    async getWorkshopByPhoneCustomer(phoneNumber: string): Promise<ApiResponse<CustomerWorkshopResponse>> {
+        try {
+            return await get<CustomerWorkshopResponse>(API_ENDPOINTS.WORKSHOP.CUSTOMER_WORKSHOPS(phoneNumber))
+        } catch (error) {
+            console.error(`Lỗi khi tải danh sách khóa học đã đăng ký với số điện thoại ${phoneNumber}:`, error)
             throw error
         }
     }

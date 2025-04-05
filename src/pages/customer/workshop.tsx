@@ -17,6 +17,7 @@ export default function CustomerWorkshops() {
                 </Button>
             </div>
 
+
             {workshops.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                     <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
