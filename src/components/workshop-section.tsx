@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Link } from "react-router-dom"
+import "./css/PizzaCard.css";
 
 
 // Register GSAP plugins
@@ -274,7 +275,7 @@ export default function WorkshopSection() {
             ],
             background:
                 "https://img.freepik.com/premium-photo/happy-chef-holding-delicious-pizza_13339-163507.jpg?w=996",
-            overlayColor: "rgba(102, 105, 60, 0.7)", // Blue overlay for a professional feel
+            overlayColor: "rgba(104, 105, 83, 0.7)", // Blue overlay for a professional feel
         },
     ]
 
@@ -418,29 +419,64 @@ export default function WorkshopSection() {
                         {uniquePizzas.map((pizza, index) => (
                             <div
                                 key={index}
-                                className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
-                                data-aos="flip-left"
-                                data-aos-delay={index * 100}
+                                className="pizza-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg"
+                                style={{
+                                    perspective: "1000px", // Add perspective for 3D effect
+                                }}
                             >
-                                <div className="relative h-32 sm:h-40 md:h-48">
-                                    <img
-                                        src={pizza.image || "/placeholder.svg"}
-                                        alt={pizza.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div className="p-3 md:p-4">
-                                    <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{pizza.name}</h3>
-                                    <p className="text-gray-600 text-xs md:text-sm mb-2 md:mb-3">{pizza.description}</p>
-                                    <div className="flex flex-wrap gap-1 md:gap-2">
-                                        {pizza.tags.map((tag, tagIndex) => (
-                                            <span
-                                                key={tagIndex}
-                                                className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full"
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
+                                <div
+                                    className="pizza-card-inner w-full h-full transition-all duration-1000"
+                                    style={{
+                                        transformStyle: "preserve-3d",
+                                    }}
+                                >
+                                    <div className="pizza-card-front w-full h-full backface-hidden">
+                                        <div className="relative h-32 sm:h-40 md:h-56">
+                                            <img
+                                                src={pizza.image || "/placeholder.svg"}
+                                                alt={pizza.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="p-3 md:p-7">
+                                            <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{pizza.name}</h3>
+                                            <p className="text-gray-600 text-xs md:text-sm mb-2 md:mb-3">{pizza.description}</p>
+                                            <div className="flex flex-wrap gap-1 md:gap-2">
+                                                {pizza.tags.map((tag, tagIndex) => (
+                                                    <span
+                                                        key={tagIndex}
+                                                        className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full"
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}</div>
+                                        </div>
+                                    </div>
+                                    <div
+                                        className="pizza-card-back w-full h-full absolute top-0 left-0 backface-hidden bg-primary/10 flex flex-col justify-center items-center p-4"
+                                        style={{
+                                            transform: "rotateY(180deg)",
+                                        }}
+                                    >
+                                        <h3 className="text-lg md:text-xl font-bold text-primary mb-2">{pizza.name}</h3>
+                                        <p className="text-center text-sm md:text-base mb-4">{pizza.description}</p>
+                                        <div className="flex flex-wrap justify-center gap-2 mb-4">
+                                            {pizza.tags.map((tag, tagIndex) => (
+                                                <span
+                                                    key={tagIndex}
+                                                    className="inline-block bg-primary/20 text-primary font-medium text-xs px-2 py-1 rounded-full"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-primary text-primary hover:bg-primary hover:text-white"
+                                        >
+                                            Xem Công Thức
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -542,6 +578,7 @@ export default function WorkshopSection() {
             </div>
 
             {/* Add a spacer div to ensure proper spacing after the vertical section */}
+            {/* Add CSS for the pizza card flip animation */}
 
         </section>
     )

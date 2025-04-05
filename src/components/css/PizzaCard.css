@@ -1,0 +1,14 @@
+/* PizzaCard.css */
+.pizza-card:hover .pizza-card-inner {
+    transform: rotateY(180deg);
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .pizza-card-inner {
+    transition: transform 1s;
+    transform-style: preserve-3d;
+  }
+  

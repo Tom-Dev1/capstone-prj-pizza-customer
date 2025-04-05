@@ -3,6 +3,7 @@ import { motion } from "framer-motion"
 import { gsap } from "gsap"
 import { Link, useNavigate } from "react-router-dom"
 import Pizza1 from "@/assets/Pizza600x600.png"
+import pizzabg from "@/assets/pizzatomatoe.jpg"
 export default function Hero() {
     const sectionRef = useRef<HTMLDivElement>(null)
     const pizzaRef = useRef<HTMLDivElement>(null)
@@ -29,7 +30,7 @@ export default function Hero() {
             <div
                 className="absolute inset-0 z-0 bg-cover bg-center bg-fixed"
                 style={{
-                    backgroundImage: "url('https://img.goodfon.com/original/1920x1080/2/95/pizza-tomatoes-portion.jpg?d=1')",
+                    backgroundImage: `url(${pizzabg})`,
                     filter: "brightness(0.4)",
                 }}
             />
