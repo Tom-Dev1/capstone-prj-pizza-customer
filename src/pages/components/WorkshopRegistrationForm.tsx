@@ -65,24 +65,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     const [, setRegistrationConfirmed] = useState(false)
     const [registrationData, setRegistrationData] = useState<WorkshopRegistration | null>(null)
 
-    // Check if there's a verified phone in localStorage on mount
-    useEffect(() => {
-        const verifiedPhone = localStorage.getItem("verified_phone")
-        const verifiedOtp = localStorage.getItem("verified_otp")
-
-        if (verifiedPhone && verifiedOtp) {
-            setPhoneNumber(verifiedPhone)
-            setOtp(verifiedOtp)
-            setIsPhoneVerified(true)
-            setCurrentStep(FormStep.REGISTRATION_FORM)
-
-            // Update guest info with the phone number
-            setGuestInfo((prev) => ({
-                ...prev,
-                phone: verifiedPhone,
-            }))
-        }
-    }, [])
 
     // Fetch product details for all workshop food options
     useEffect(() => {
@@ -182,9 +164,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             const response = await authService.verifyOtp(phoneNumber, otp)
 
             if (response.success) {
-                // Store verified phone and OTP in localStorage
-                localStorage.setItem("verified_phone", phoneNumber)
-                localStorage.setItem("verified_otp", otp)
 
                 // Update state
                 setIsPhoneVerified(true)
@@ -394,12 +373,11 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     // Reset form when closing
     const handleClose = () => {
         // Only reset if not in the middle of registration form
-        if (currentStep !== FormStep.REGISTRATION_FORM) {
-            setCurrentStep(FormStep.PHONE_INPUT)
-            setPhoneNumber("")
-            setOtp("")
-            setOtpError(null)
-        }
+        setCurrentStep(FormStep.PHONE_INPUT)
+        setPhoneNumber("")
+        setOtp("")
+        setOtpError(null)
+        setIsPhoneVerified(false)
         onClose()
     }
 
