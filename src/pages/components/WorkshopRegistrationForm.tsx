@@ -1,7 +1,4 @@
-"use client"
-
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { X, Loader2, AlertCircle, Check, Phone, ArrowRight, Users, Calendar, Wallet, Pizza } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -105,7 +102,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                         const response = await productService.getProductById(food.productId)
                         if (response.success && response.result) {
                             productMap.set(food.productId, response.result)
-                            productSelections.set(food.productId, new Set<string>())
                         }
                     } catch (err) {
                         console.error(`Lỗi khi tải sản phẩm ${food.productId}:`, err)
@@ -345,13 +341,14 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             const products: ProductSelection[] = []
 
             selectedProducts.forEach((optionItems, productId) => {
-                // Thêm tất cả sản phẩm đã chọn vào danh sách
-                products.push({
-                    productId,
-                    optionItemIds: Array.from(optionItems),
-                })
+                // Chỉ thêm sản phẩm vào danh sách nếu nó được chọn
+                if (optionItems.size > 0) {
+                    products.push({
+                        productId,
+                        optionItemIds: Array.from(optionItems),
+                    })
+                }
             })
-
             // Cập nhật cấu trúc dữ liệu đăng ký theo yêu cầu mới
             const data: WorkshopRegistration = {
                 phoneNumber: phoneNumber,
@@ -605,6 +602,9 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                         placeholder="example@gmail.com"
                                                         required
                                                     />
+                                                    <p className="text-xs flex items-center mt-1 italic text-gray-500">
+                                                        (*Nhập đúng để nhận mã đăng ký của bạn)
+                                                    </p>
                                                 </div>
 
                                                 <div>
@@ -674,7 +674,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                             <div className="mt-3 space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Phí tham gia:</span>
-                                                    <span>{workshop.totalFee.toLocaleString()} VND / người</span>
+                                                    <span>{workshop.totalFee.toLocaleString()}VND</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Số lượng người:</span>
@@ -684,7 +684,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                     <div className="flex justify-between font-bold">
                                                         <span>Tổng cộng:</span>
                                                         <span className="text-primary">
-                                                            {(totalParticipants * workshop.totalFee).toLocaleString()} VND
+                                                            {workshop.totalFee.toLocaleString()}VND
                                                         </span>
                                                     </div>
                                                 </div>

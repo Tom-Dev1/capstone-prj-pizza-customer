@@ -1,25 +1,24 @@
-"use client"
 
-import { lazy, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import AOS from "aos"
 import "aos/dist/aos.css"
+import Header from "@/components/header"
+import Hero from "@/components/hero"
+import Features from "@/components/features"
+import Menu from "@/components/menu"
+import ProcessSection from "@/components/process-section"
+import DiningExperience from "@/components/dining-experience"
+import WorkshopSection from "@/components/workshop-section"
+import Testimonials from "@/components/testimonials"
+import Contact from "@/components/contact"
+import Footer from "@/components/footer"
+import ScrollToTop from "@/components/scroll-to-top"
 
 
 
-const Header = lazy(() => import("@/components/header"))
-const Hero = lazy(() => import("@/components/hero"))
-const ScrollToTop = lazy(() => import("@/components/scroll-to-top"))
-const Features = lazy(() => import("@/components/features"))
-const Menu = lazy(() => import("@/components/menu"))
-const ProcessSection = lazy(() => import("@/components/process-section"))
-const DiningExperience = lazy(() => import("@/components/dining-experience"))
-const WorkshopSection = lazy(() => import("@/components/workshop-section"))
-const Testimonials = lazy(() => import("@/components/testimonials"))
-const Contact = lazy(() => import("@/components/contact"))
-const Footer = lazy(() => import("@/components/footer"))
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)

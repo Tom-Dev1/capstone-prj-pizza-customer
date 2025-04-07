@@ -14,10 +14,10 @@ const Booking = lazy(() => import("@/pages/booking"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const UserLayout = lazy(() => import("@/layouts/UserLayout"));
 const AuthVerificationCheck = lazy(() => import("@/components/auth-verification-check"));
-
-
-
 const GuestLayout = lazy(() => import("@/layouts/GuestLayout"))
+
+
+
 import { GuestRoute } from "./GuestRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 

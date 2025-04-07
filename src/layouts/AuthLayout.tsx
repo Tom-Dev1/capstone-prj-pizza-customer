@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import Header from "@/components/header"
 
-export default function AuthLayout() {
+const AuthLayout = () => {
     const [isMobile, setIsMobile] = useState(false)
 
     // Check if device is mobile
@@ -131,3 +131,4 @@ export default function AuthLayout() {
     )
 }
 
+export default AuthLayout
