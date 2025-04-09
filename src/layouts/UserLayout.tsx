@@ -1,3 +1,4 @@
+"use client"
 
 import { useState, useEffect } from "react"
 import { Link, useLocation, Navigate, Outlet } from "react-router-dom"
@@ -18,31 +19,31 @@ const UserLayout = () => {
             setIsMobile(window.innerWidth < 1024)
         }
 
-        // Initial check
+        // Kiểm tra ban đầu
         checkMobile()
 
-        // Add event listener
+        // Thêm event listener
         window.addEventListener("resize", checkMobile)
 
-        // Cleanup
+        // Dọn dẹp
         return () => window.removeEventListener("resize", checkMobile)
     }, [])
 
-    // Close sidebar when route changes on mobile
+    // Đóng sidebar khi thay đổi đường dẫn trên thiết bị di động
     useEffect(() => {
         if (isMobile) {
             setIsSidebarOpen(false)
         }
     }, [location.pathname, isMobile])
 
-    // If not authenticated, redirect to login
+    // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
     if (!isAuthenticated) {
         return <Navigate to="/auth/login" state={{ from: location }} replace />
     }
 
-    // Get user initials for avatar
+    // Lấy chữ cái đầu của tên người dùng cho avatar
     const getUserInitials = () => {
-        if (!user?.name) return "U"
+        if (!user?.name) return "N"
         return user.name
             .split(" ")
             .map((part) => part[0])
@@ -52,11 +53,11 @@ const UserLayout = () => {
     }
 
     const navigation = [
-        { name: "Dashboard", href: "/customer/dashboard", icon: Home },
-        { name: "My Orders", href: "/customer/orders", icon: ShoppingBag },
-        { name: "Favorites", href: "/customer/favorites", icon: Heart },
-        { name: "Workshops", href: "/customer/workshops", icon: Calendar },
-        { name: "Settings", href: "/customer/settings", icon: Settings },
+        { name: "Trang Chủ", href: "/customer/dashboard", icon: Home },
+        { name: "Đơn Hàng", href: "/customer/orders", icon: ShoppingBag },
+        { name: "Yêu Thích", href: "/customer/favorites", icon: Heart },
+        { name: "Khóa Học", href: "/customer/workshops", icon: Calendar },
+        { name: "Cài Đặt", href: "/customer/settings", icon: Settings },
     ]
 
     return (
@@ -64,12 +65,12 @@ const UserLayout = () => {
             <Header />
 
             <div className="flex flex-grow pt-16">
-                {/* Overlay for mobile */}
+                {/* Lớp phủ cho thiết bị di động */}
                 {isSidebarOpen && isMobile && (
                     <div className="fixed inset-0 bg-black/30 z-20" onClick={() => setIsSidebarOpen(false)} />
                 )}
 
-                {/* Sidebar */}
+                {/* Thanh bên */}
                 <aside
                     className={cn(
                         "fixed inset-y-0 left-0 z-30 transform bg-white transition-all duration-300 ease-in-out pt-16 shadow-md",
@@ -81,7 +82,7 @@ const UserLayout = () => {
                         "flex flex-col",
                     )}
                 >
-                    {/* Mobile close button */}
+                    {/* Nút đóng cho thiết bị di động */}
                     {isMobile && (
                         <button
                             className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
@@ -91,7 +92,7 @@ const UserLayout = () => {
                         </button>
                     )}
 
-                    {/* User profile section */}
+                    {/* Phần thông tin người dùng */}
                     <div
                         className={cn(
                             "flex items-center p-4 border-b transition-all duration-300",
@@ -99,7 +100,10 @@ const UserLayout = () => {
                         )}
                     >
                         <Avatar className="h-10 w-10 border-2 border-primary flex-shrink-0">
-                            <AvatarImage src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`} alt={user?.name || "User"} />
+                            <AvatarImage
+                                src={`https://www.svgrepo.com/show/492671/avatar-girl.svg`}
+                                alt={user?.name || "Người dùng"}
+                            />
                             <AvatarFallback className="bg-primary text-white">{getUserInitials()}</AvatarFallback>
                         </Avatar>
                         <div
@@ -113,8 +117,8 @@ const UserLayout = () => {
                         </div>
                     </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1  py-4">
+                    {/* Điều hướng */}
+                    <nav className="flex-1 py-4">
                         <ul className="space-y-1 px-2">
                             {navigation.map((item) => {
                                 const isActive = location.pathname === item.href
@@ -128,7 +132,9 @@ const UserLayout = () => {
                                                 !isMobile ? "justify-center group-hover/sidebar:justify-start" : "",
                                             )}
                                         >
-                                            <item.icon className={cn("flex-shrink-0 h-5 w-5 ", isActive ? "text-primary" : "text-gray-500")} />
+                                            <item.icon
+                                                className={cn("flex-shrink-0 h-5 w-5 ", isActive ? "text-primary" : "text-gray-500")}
+                                            />
                                             <span
                                                 className={cn(
                                                     "ml-3 transition-all duration-300 whitespace-nowrap",
@@ -144,7 +150,7 @@ const UserLayout = () => {
                         </ul>
                     </nav>
 
-                    {/* Decorative element */}
+                    {/* Phần trang trí */}
                     <div className="p-4 mt-auto border-t">
                         <div
                             className={cn(
@@ -159,13 +165,13 @@ const UserLayout = () => {
                                     !isMobile ? "w-0 opacity-0 group-hover/sidebar:w-auto group-hover/sidebar:opacity-100" : "",
                                 )}
                             >
-                                Order Now
+                                Đặt Hàng Ngay
                             </span>
                         </div>
                     </div>
                 </aside>
 
-                {/* Mobile sidebar toggle */}
+                {/* Nút mở/đóng sidebar cho thiết bị di động */}
                 {isMobile && (
                     <button
                         className="fixed bottom-4 left-4 z-40 bg-primary text-white p-3 rounded-full shadow-lg"
@@ -175,10 +181,9 @@ const UserLayout = () => {
                     </button>
                 )}
 
-                {/* Main content */}
+                {/* Nội dung chính */}
                 <main className={cn("flex-grow transition-all duration-300 ease-in-out", isMobile ? "w-full" : "ml-20")}>
                     <div className="container mx-auto px-4 py-8">
-
                         <Outlet />
                     </div>
                 </main>
@@ -188,4 +193,3 @@ const UserLayout = () => {
 }
 
 export default UserLayout
-

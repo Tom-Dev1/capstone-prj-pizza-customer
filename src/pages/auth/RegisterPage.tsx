@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState, useEffect, useTransition } from "react"
+import { useNavigate } from "react-router-dom"
 import { useForm, Controller } from "react-hook-form"
 import { Eye, EyeOff, Check, X, Info } from "lucide-react"
 import { type ApiErrorResponse, authService, type RegisterRequest } from "@/services"
@@ -15,6 +15,7 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<ApiErrorResponse | null>(null)
+    const [isPending, startTransition] = useTransition()
     const [passwordStrength, setPasswordStrength] = useState({
         score: 0,
         hasMinLength: false,
@@ -30,18 +31,18 @@ export default function RegisterPage() {
         handleSubmit,
         control,
         watch,
-        formState: { errors, dirtyFields, isSubmitting, },
+        formState: { errors, dirtyFields, isSubmitting },
     } = useForm<RegisterRequest>({
         defaultValues: {
-            gender: false, // Default to female
+            gender: false, // Mặc định là nữ
         },
-        mode: "onChange", // Validate on change for better UX
+        mode: "onChange", // Xác thực khi thay đổi để UX tốt hơn
     })
 
-    // Watch password for strength meter
+    // Theo dõi mật khẩu cho thang đo độ mạnh
     const watchPassword = watch("password", "")
 
-    // Update password strength
+    // Cập nhật độ mạnh mật khẩu
     useEffect(() => {
         if (watchPassword) {
             const hasMinLength = watchPassword.length >= 8
@@ -50,7 +51,7 @@ export default function RegisterPage() {
             const hasNumber = /[0-9]/.test(watchPassword)
             const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(watchPassword)
 
-            // Calculate score (0-4)
+            // Tính điểm (0-4)
             let score = 0
             if (hasMinLength) score++
             if (hasUppercase && hasLowercase) score++
@@ -87,10 +88,10 @@ export default function RegisterPage() {
 
     const getPasswordStrengthText = () => {
         if (!watchPassword) return ""
-        if (passwordStrength.score === 1) return "Weak"
-        if (passwordStrength.score === 2) return "Fair"
-        if (passwordStrength.score === 3) return "Good"
-        if (passwordStrength.score === 4) return "Strong"
+        if (passwordStrength.score === 1) return "Yếu"
+        if (passwordStrength.score === 2) return "Trung bình"
+        if (passwordStrength.score === 3) return "Tốt"
+        if (passwordStrength.score === 4) return "Mạnh"
         return ""
     }
 
@@ -102,14 +103,14 @@ export default function RegisterPage() {
                 ...data,
                 dateOfBirth: new Date(data.dateOfBirth).toISOString(),
             }
-            console.log("Submitting registration data:", formattedData)
+            console.log("Đang gửi dữ liệu đăng ký:", formattedData)
             const response = await authService.register(formattedData)
             if (!response.success) {
-                console.log("dang ky khong thanh cong")
+                console.log("Đăng ký không thành công")
                 throw setErrorMessage(response.result.axiosError as ApiErrorResponse)
             }
 
-            toast.success("Registration successful! Please login.", {
+            toast.success("Đăng ký thành công! Vui lòng đăng nhập.", {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -117,13 +118,15 @@ export default function RegisterPage() {
                 pauseOnHover: true,
                 draggable: true,
             })
-            navigate("/auth/login")
+
+            // Sử dụng startTransition cho navigation
+            startTransition(() => {
+                navigate("/auth/login")
+            })
         } catch (error) {
+            console.log("LỖI Catch", error)
 
-
-            console.log("ERROR Catch", error)
-
-            toast.error("Registration error ! Please try again.", {
+            toast.error("Lỗi đăng ký! Vui lòng thử lại.", {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -133,13 +136,19 @@ export default function RegisterPage() {
             })
 
             throw error
-
         } finally {
             setIsLoading(false)
         }
     }
 
-    // Animation variants for form elements
+    // Xử lý chuyển hướng đến trang đăng nhập
+    const handleLoginClick = () => {
+        startTransition(() => {
+            navigate("/auth/login")
+        })
+    }
+
+    // Animation variants cho các phần tử form
     const formItemVariants = {
         hidden: { opacity: 0, y: 10 },
         visible: (i: number) => ({
@@ -155,11 +164,11 @@ export default function RegisterPage() {
     return (
         <TooltipProvider>
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold">Create an Account</h2>
-                <p className="text-gray-600 mt-1">Fill in your details to get started</p>
+                <h2 className="text-2xl font-bold">Tạo Tài Khoản</h2>
+                <p className="text-gray-600 mt-1">Điền thông tin của bạn để bắt đầu</p>
             </div>
 
-            {/* Display the error message */}
+            {/* Hiển thị thông báo lỗi */}
             {errorMessage && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -172,16 +181,16 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Username */}
+                    {/* Tên đăng nhập */}
                     <motion.div custom={0} initial="hidden" animate="visible" variants={formItemVariants} className="relative">
                         <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">
-                            Username*
+                            Tên đăng nhập*
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 inline-block ml-1 text-gray-400 cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p className="text-xs">Username must be unique and will be used for login</p>
+                                    <p className="text-xs">Tên đăng nhập phải là duy nhất và sẽ được sử dụng để đăng nhập</p>
                                 </TooltipContent>
                             </Tooltip>
                         </label>
@@ -189,21 +198,21 @@ export default function RegisterPage() {
                             id="userName"
                             type="text"
                             {...register("userName", {
-                                required: "Username is required",
+                                required: "Tên đăng nhập là bắt buộc",
                                 minLength: {
                                     value: 3,
-                                    message: "Username must be at least 3 characters",
+                                    message: "Tên đăng nhập phải có ít nhất 3 ký tự",
                                 },
                                 pattern: {
                                     value: /^[a-zA-Z0-9_]+$/,
-                                    message: "Username can only contain letters, numbers and underscore",
+                                    message: "Tên đăng nhập chỉ có thể chứa chữ cái, số và dấu gạch dưới",
                                 },
                             })}
                             className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${errors.userName
-                                ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                                : dirtyFields.userName
-                                    ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                    : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                    ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                    : dirtyFields.userName
+                                        ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                        : "border-gray-300 focus:border-primary focus:ring-primary/20"
                                 }`}
                         />
                         {dirtyFields.userName && !errors.userName && (
@@ -217,36 +226,35 @@ export default function RegisterPage() {
                         )}
                     </motion.div>
 
-                    {/* Password */}
+                    {/* Mật khẩu */}
                     <motion.div custom={1} initial="hidden" animate="visible" variants={formItemVariants} className="relative">
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password*
+                            Mật khẩu*
                         </label>
                         <div className="relative">
                             <input
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 {...register("password", {
-                                    required: "Password is required",
+                                    required: "Mật khẩu là bắt buộc",
                                     minLength: {
                                         value: 8,
-                                        message: "Password must be at least 8 characters",
+                                        message: "Mật khẩu phải có ít nhất 8 ký tự",
                                     },
                                     validate: {
-                                        hasUppercase: (value) =>
-                                            /[A-Z]/.test(value) || "Password must contain at least one uppercase letter",
+                                        hasUppercase: (value) => /[A-Z]/.test(value) || "Mật khẩu phải chứa ít nhất một chữ cái viết hoa",
                                         hasLowercase: (value) =>
-                                            /[a-z]/.test(value) || "Password must contain at least one lowercase letter",
-                                        hasNumber: (value) => /[0-9]/.test(value) || "Password must contain at least one number",
+                                            /[a-z]/.test(value) || "Mật khẩu phải chứa ít nhất một chữ cái viết thường",
+                                        hasNumber: (value) => /[0-9]/.test(value) || "Mật khẩu phải chứa ít nhất một số",
                                         hasSpecialChar: (value) =>
-                                            /[!@#$%^&*(),.?":{}|<>]/.test(value) || "Password must contain at least one special character",
+                                            /[!@#$%^&*(),.?":{}|<>]/.test(value) || "Mật khẩu phải chứa ít nhất một ký tự đặc biệt",
                                     },
                                 })}
                                 className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 pr-10 ${errors.password
-                                    ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                                    : passwordStrength.score >= 3
-                                        ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                        : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                        ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                        : passwordStrength.score >= 3
+                                            ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                            : "border-gray-300 focus:border-primary focus:ring-primary/20"
                                     }`}
                             />
                             <button
@@ -258,7 +266,7 @@ export default function RegisterPage() {
                             </button>
                         </div>
 
-                        {/* Password strength meter */}
+                        {/* Thang đo độ mạnh mật khẩu */}
                         {watchPassword && (
                             <div className="mt-2">
                                 <div className="flex justify-between items-center mb-1">
@@ -273,12 +281,12 @@ export default function RegisterPage() {
                                     </div>
                                     <span
                                         className={`text-xs font-medium ${passwordStrength.score <= 1
-                                            ? "text-red-500"
-                                            : passwordStrength.score === 2
-                                                ? "text-orange-500"
-                                                : passwordStrength.score === 3
-                                                    ? "text-yellow-600"
-                                                    : "text-green-500"
+                                                ? "text-red-500"
+                                                : passwordStrength.score === 2
+                                                    ? "text-orange-500"
+                                                    : passwordStrength.score === 3
+                                                        ? "text-yellow-600"
+                                                        : "text-green-500"
                                             }`}
                                     >
                                         {getPasswordStrengthText()}
@@ -295,12 +303,12 @@ export default function RegisterPage() {
                                         ) : (
                                             <X className="h-3 w-3 mr-1" />
                                         )}
-                                        At least 8 characters
+                                        Ít nhất 8 ký tự
                                     </div>
                                     <div
                                         className={`text-xs flex items-center ${passwordStrength.hasUppercase && passwordStrength.hasLowercase
-                                            ? "text-green-600"
-                                            : "text-gray-500"
+                                                ? "text-green-600"
+                                                : "text-gray-500"
                                             }`}
                                     >
                                         {passwordStrength.hasUppercase && passwordStrength.hasLowercase ? (
@@ -308,14 +316,18 @@ export default function RegisterPage() {
                                         ) : (
                                             <X className="h-3 w-3 mr-1" />
                                         )}
-                                        Upper & lowercase
+                                        Chữ hoa & thường
                                     </div>
                                     <div
                                         className={`text-xs flex items-center ${passwordStrength.hasNumber ? "text-green-600" : "text-gray-500"
                                             }`}
                                     >
-                                        {passwordStrength.hasNumber ? <Check className="h-3 w-3 mr-1 mt-1" /> : <X className="h-3 w-3 mr-1" />}
-                                        At least 1 number
+                                        {passwordStrength.hasNumber ? (
+                                            <Check className="h-3 w-3 mr-1 mt-1" />
+                                        ) : (
+                                            <X className="h-3 w-3 mr-1" />
+                                        )}
+                                        Ít nhất 1 số
                                     </div>
                                     <div
                                         className={`text-xs flex items-center ${passwordStrength.hasSpecialChar ? "text-green-600" : "text-gray-500"
@@ -326,7 +338,7 @@ export default function RegisterPage() {
                                         ) : (
                                             <X className="h-3 w-3 mr-1" />
                                         )}
-                                        Special character
+                                        Ký tự đặc biệt
                                     </div>
                                 </div>
                             </div>
@@ -340,30 +352,30 @@ export default function RegisterPage() {
                         )}
                     </motion.div>
 
-                    {/* Full Name */}
+                    {/* Họ và tên */}
                     <motion.div custom={2} initial="hidden" animate="visible" variants={formItemVariants} className="relative">
                         <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                            Full Name*
+                            Họ và tên*
                         </label>
                         <input
                             id="fullName"
                             type="text"
                             {...register("fullName", {
-                                required: "Full name is required",
+                                required: "Họ và tên là bắt buộc",
                                 minLength: {
                                     value: 2,
-                                    message: "Full name must be at least 2 characters",
+                                    message: "Họ và tên phải có ít nhất 2 ký tự",
                                 },
                                 pattern: {
                                     value: /^[a-zA-ZÀ-ỹ\s]+$/,
-                                    message: "Full name can only contain letters and spaces",
+                                    message: "Họ và tên chỉ có thể chứa chữ cái và khoảng trắng",
                                 },
                             })}
                             className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${errors.fullName
-                                ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                                : dirtyFields.fullName
-                                    ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                    : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                    ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                    : dirtyFields.fullName
+                                        ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                        : "border-gray-300 focus:border-primary focus:ring-primary/20"
                                 }`}
                         />
                         {dirtyFields.fullName && !errors.fullName && (
@@ -386,20 +398,22 @@ export default function RegisterPage() {
                             id="email"
                             type="email"
                             {...register("email", {
-                                required: "Email is required",
+                                required: "Email là bắt buộc",
                                 pattern: {
                                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                    message: "Invalid email address",
+                                    message: "Địa chỉ email không hợp lệ",
                                 },
                             })}
                             className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${errors.email
-                                ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                                : dirtyFields.email
-                                    ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                    : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                    ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                    : dirtyFields.email
+                                        ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                        : "border-gray-300 focus:border-primary focus:ring-primary/20"
                                 }`}
                         />
-                        {dirtyFields.email && !errors.email && <Check className="absolute right-3 top-8 h-4 w-4 text-green-500 mt-1" />}
+                        {dirtyFields.email && !errors.email && (
+                            <Check className="absolute right-3 top-8 h-4 w-4 text-green-500 mt-1" />
+                        )}
                         {errors.email && (
                             <div className="mt-1 text-xs text-red-600 flex items-start">
                                 <X className="h-3.5 w-3.5 mr-1 mt-0.5 flex-shrink-0" />
@@ -408,16 +422,16 @@ export default function RegisterPage() {
                         )}
                     </motion.div>
 
-                    {/* Phone */}
+                    {/* Số điện thoại */}
                     <motion.div custom={4} initial="hidden" animate="visible" variants={formItemVariants} className="relative">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                            Phone Number*
+                            Số điện thoại*
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 inline-block ml-1 text-gray-400 cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p className="text-xs">Enter a 10-digit phone number without spaces or dashes</p>
+                                    <p className="text-xs">Nhập số điện thoại 10 chữ số không có khoảng trắng hoặc dấu gạch ngang</p>
                                 </TooltipContent>
                             </Tooltip>
                         </label>
@@ -425,20 +439,22 @@ export default function RegisterPage() {
                             id="phone"
                             type="tel"
                             {...register("phone", {
-                                required: "Phone number is required",
+                                required: "Số điện thoại là bắt buộc",
                                 pattern: {
                                     value: /^0[0-9]{9}$/,
-                                    message: "Please enter a valid 10-digit phone number",
+                                    message: "Vui lòng nhập số điện thoại 10 chữ số hợp lệ",
                                 },
                             })}
                             className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${errors.phone
-                                ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                                : dirtyFields.phone
-                                    ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                    : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                    ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                    : dirtyFields.phone
+                                        ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                        : "border-gray-300 focus:border-primary focus:ring-primary/20"
                                 }`}
                         />
-                        {dirtyFields.phone && !errors.phone && <Check className="absolute right-3 top-8 h-4 w-4 text-green-500 mt-1" />}
+                        {dirtyFields.phone && !errors.phone && (
+                            <Check className="absolute right-3 top-8 h-4 w-4 text-green-500 mt-1" />
+                        )}
                         {errors.phone && (
                             <div className="mt-1 text-xs text-red-600 flex items-start">
                                 <X className="h-3.5 w-3.5 mr-1 mt-0.5 flex-shrink-0" />
@@ -447,31 +463,30 @@ export default function RegisterPage() {
                         )}
                     </motion.div>
 
-                    {/* Date of Birth */}
+                    {/* Ngày sinh */}
                     <motion.div custom={5} initial="hidden" animate="visible" variants={formItemVariants} className="relative">
                         <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
-                            Date of Birth*
+                            Ngày sinh*
                         </label>
                         <input
                             id="dateOfBirth"
                             type="date"
                             max={new Date().toISOString().split("T")[0]}
                             {...register("dateOfBirth", {
-                                required: "Date of birth is required",
+                                required: "Ngày sinh là bắt buộc",
                                 validate: {
                                     notFuture: (value) => {
                                         const date = new Date(value)
                                         const today = new Date()
-                                        return date <= today || "Date of birth cannot be in the future"
+                                        return date <= today || "Ngày sinh không thể là ngày trong tương lai"
                                     },
-
                                 },
                             })}
                             className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${errors.dateOfBirth
-                                ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                                : dirtyFields.dateOfBirth
-                                    ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                    : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                    ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                    : dirtyFields.dateOfBirth
+                                        ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                        : "border-gray-300 focus:border-primary focus:ring-primary/20"
                                 }`}
                         />
 
@@ -484,26 +499,26 @@ export default function RegisterPage() {
                     </motion.div>
                 </div>
 
-                {/* Address - Full width */}
+                {/* Địa chỉ - Chiều rộng đầy đủ */}
                 <motion.div custom={6} initial="hidden" animate="visible" variants={formItemVariants} className="relative">
                     <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                        Address*
+                        Địa chỉ*
                     </label>
                     <textarea
                         id="address"
                         {...register("address", {
-                            required: "Address is required",
+                            required: "Địa chỉ là bắt buộc",
                             minLength: {
                                 value: 5,
-                                message: "Address must be at least 5 characters",
+                                message: "Địa chỉ phải có ít nhất 5 ký tự",
                             },
                         })}
                         rows={2}
                         className={`w-full px-3 py-2 border rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 ${errors.address
-                            ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                            : dirtyFields.address
-                                ? "border-green-300 focus:border-green-300 focus:ring-green-200"
-                                : "border-gray-300 focus:border-primary focus:ring-primary/20"
+                                ? "border-red-300 focus:border-red-300 focus:ring-red-200"
+                                : dirtyFields.address
+                                    ? "border-green-300 focus:border-green-300 focus:ring-green-200"
+                                    : "border-gray-300 focus:border-primary focus:ring-primary/20"
                             }`}
                     />
                     {dirtyFields.address && !errors.address && (
@@ -517,9 +532,9 @@ export default function RegisterPage() {
                     )}
                 </motion.div>
 
-                {/* Gender */}
+                {/* Giới tính */}
                 <motion.div custom={7} initial="hidden" animate="visible" variants={formItemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Gender*</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Giới tính*</label>
                     <Controller
                         name="gender"
                         control={control}
@@ -532,13 +547,13 @@ export default function RegisterPage() {
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="true" id="male" />
                                     <Label htmlFor="male" className="text-sm">
-                                        Male
+                                        Nam
                                     </Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="false" id="female" />
                                     <Label htmlFor="female" className="text-sm">
-                                        Female
+                                        Nữ
                                     </Label>
                                 </div>
                             </RadioGroup>
@@ -548,12 +563,12 @@ export default function RegisterPage() {
 
                 <motion.button
                     type="submit"
-                    disabled={isLoading || isSubmitting}
+                    disabled={isLoading || isSubmitting || isPending}
                     className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 mt-4 relative overflow-hidden"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                 >
-                    {(isLoading || isSubmitting) && (
+                    {(isLoading || isSubmitting || isPending) && (
                         <span className="absolute inset-0 flex items-center justify-center">
                             <svg
                                 className="animate-spin h-5 w-5 text-white"
@@ -570,19 +585,22 @@ export default function RegisterPage() {
                             </svg>
                         </span>
                     )}
-                    <span className={isLoading || isSubmitting ? "opacity-0" : ""}>Create Account</span>
+                    <span className={isLoading || isSubmitting || isPending ? "opacity-0" : ""}>Tạo Tài Khoản</span>
                 </motion.button>
 
                 <div className="text-center mt-4">
                     <p className="text-sm text-gray-600">
-                        Already have an account?{" "}
-                        <Link to="/auth/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
-                            Sign in
-                        </Link>
+                        Đã có tài khoản?{" "}
+                        <button
+                            type="button"
+                            onClick={handleLoginClick}
+                            className="font-medium text-primary hover:text-primary/80 transition-colors"
+                        >
+                            Đăng nhập
+                        </button>
                     </p>
                 </div>
             </form>
         </TooltipProvider>
     )
 }
-

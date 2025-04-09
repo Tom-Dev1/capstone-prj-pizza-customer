@@ -4,29 +4,29 @@ import { Outlet } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import Header from "@/components/header"
-
+import pizza12 from "@/assets/Pizza600x600.png"
 const AuthLayout = () => {
     const [isMobile, setIsMobile] = useState(false)
 
-    // Check if device is mobile
+    // Kiểm tra nếu thiết bị là điện thoại di động
     useEffect(() => {
         const checkIfMobile = () => {
             setIsMobile(window.innerWidth < 768)
         }
 
-        // Initial check
+        // Kiểm tra ban đầu
         checkIfMobile()
 
-        // Add event listener for window resize
+        // Thêm event listener cho việc thay đổi kích thước cửa sổ
         window.addEventListener("resize", checkIfMobile)
 
-        // Cleanup
+        // Dọn dẹp
         return () => window.removeEventListener("resize", checkIfMobile)
     }, [])
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
-            {/* Mobile Header - Only visible on mobile */}
+            {/* Header cho điện thoại - Chỉ hiển thị trên điện thoại */}
             <Header />
             {isMobile && (
                 <motion.div
@@ -40,7 +40,7 @@ const AuthLayout = () => {
             )}
 
             <div className="flex flex-col md:flex-row flex-grow">
-                {/* Left side - Pizza branding - Hidden on mobile, visible on desktop */}
+                {/* Bên trái - Thương hiệu Pizza - Ẩn trên điện thoại, hiển thị trên máy tính */}
                 <motion.div
                     initial={{ opacity: 0, x: -50 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -50,29 +50,28 @@ const AuthLayout = () => {
                     <div className="max-w-md mx-auto text-center">
                         <h1 className="text-4xl md:text-5xl font-bold mb-6">PizzaCapstone</h1>
                         <p className="text-xl mb-8">
-                            Join our pizza-loving community and get exclusive access to special offers, new menu items, and workshop
-                            reservations.
+                            Tham gia cộng đồng yêu thích pizza của chúng tôi và nhận quyền truy cập độc quyền vào các ưu đãi đặc biệt, các món mới trong thực đơn và đặt chỗ cho các khóa học.
                         </p>
                         <div className="relative w-64 h-64 mx-auto my-8">
                             <img
-                                src="https://placehold.co/400x400"
-                                alt="Delicious Pizza"
+                                src={pizza12}
+                                alt="Pizza Ngon"
                                 className="rounded-full w-full h-full object-cover shadow-lg"
                             />
                             <div className="absolute -top-4 -right-4 bg-white text-primary rounded-full p-4 shadow-lg">
-                                <div className="text-center">
+                                <div className="text-center w-10 h-10">
                                     <span className="block text-xl font-bold">20%</span>
-                                    <span className="text-xs">OFF</span>
+                                    <span className="text-xs">GIẢM</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Right side - Auth forms */}
+                {/* Bên phải - Biểu mẫu xác thực */}
                 <div className="w-full md:w-1/2  bg-white p-4 md:p-8 flex items-center justify-center">
                     <div className="w-full max-w-md">
-                        {/* Mobile Branding - Only visible on mobile */}
+                        {/* Thương hiệu trên điện thoại - Chỉ hiển thị trên điện thoại */}
                         {isMobile && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
@@ -83,23 +82,23 @@ const AuthLayout = () => {
                                 <div className="relative w-32 h-32 mx-auto mb-4">
                                     <img
                                         src="https://placehold.co/400x400"
-                                        alt="Delicious Pizza"
+                                        alt="Pizza Ngon"
                                         className="rounded-full w-full h-full object-cover shadow-md"
                                     />
                                     <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-2 shadow-md h-[56px] w-[56px]">
                                         <div className="text-center">
                                             <span className="block text-sm font-bold">20%</span>
-                                            <span className="text-xs">OFF</span>
+                                            <span className="text-xs">GIẢM</span>
                                         </div>
                                     </div>
                                 </div>
                                 <p className="text-sm text-gray-600 mb-4">
-                                    Join our pizza-loving community for exclusive offers and more!
+                                    Tham gia cộng đồng yêu thích pizza của chúng tôi để nhận các ưu đãi độc quyền và nhiều hơn nữa!
                                 </p>
                             </motion.div>
                         )}
 
-                        {/* Auth Form Content */}
+                        {/* Nội dung biểu mẫu xác thực */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -109,18 +108,18 @@ const AuthLayout = () => {
                             <Outlet />
                         </motion.div>
 
-                        {/* Footer - Both mobile and desktop */}
+                        {/* Chân trang - Cả điện thoại và máy tính */}
                         <div className="mt-6 text-center text-sm text-gray-500">
-                            <p>© {new Date().getFullYear()} PizzaCapstone. All rights reserved.</p>
+                            <p>© {new Date().getFullYear()} PizzaCapstone. Đã đăng ký bản quyền.</p>
                             <div className="mt-2 space-x-4">
                                 <a href="#" className="text-primary hover:underline">
-                                    Terms
+                                    Điều khoản
                                 </a>
                                 <a href="#" className="text-primary hover:underline">
-                                    Privacy
+                                    Quyền riêng tư
                                 </a>
                                 <a href="#" className="text-primary hover:underline">
-                                    Help
+                                    Trợ giúp
                                 </a>
                             </div>
                         </div>

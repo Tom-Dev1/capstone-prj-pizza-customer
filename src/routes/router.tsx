@@ -7,7 +7,6 @@ const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
 const CustomerDashboard = lazy(() => import("@/pages/customer/dashboard"));
 const CustomerSetting = lazy(() => import("@/pages/customer/setting"));
-const VerifyPage = lazy(() => import("@/pages/auth/verify-page"));
 const CustomerWorkshops = lazy(() => import("@/pages/customer/workshop"));
 const GuestWorkshop = lazy(() => import("@/pages/public-workshops"));
 const Booking = lazy(() => import("@/pages/booking"));
@@ -19,7 +18,6 @@ const GuestLayout = lazy(() => import("@/layouts/GuestLayout"))
 
 
 import { GuestRoute } from "./GuestRoute";
-import { ProtectedRoute } from "./ProtectedRoute";
 
 // Define routes
 const routes: RouteObject[] = [
@@ -69,18 +67,7 @@ const routes: RouteObject[] = [
                     </GuestRoute>
                 ),
             },
-            {
-                path: "verify",
-                element: (
 
-
-                    <ProtectedRoute>
-                        <VerifyPage />
-                    </ProtectedRoute>
-
-
-                ),
-            },
         ],
 
 

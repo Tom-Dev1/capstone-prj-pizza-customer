@@ -15,7 +15,6 @@ import { customerService } from "@/services/customer-service"
  */
 export default function AuthVerificationCheck({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, user, isLoading: isLoadingAuth } = useAuth()
-    const [isVerified, setIsVerified] = useState<boolean | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const location = useLocation()
@@ -35,18 +34,13 @@ export default function AuthVerificationCheck({ children }: { children: React.Re
 
                 if (response.success && response.result) {
                     console.log("Customer profile:", response.result)
-
-                    // Lưu trạng thái xác thực email
-                    setIsVerified(response.result.isVerifiedEmail)
                 } else {
                     console.error("Failed to fetch customer profile:", response.message)
                     setError(response.message || "Failed to verify account status")
-                    setIsVerified(false)
                 }
             } catch (err) {
                 console.error("Error checking verification:", err)
                 setError("An error occurred while checking your account status")
-                setIsVerified(false)
             } finally {
                 setIsLoading(false)
             }
@@ -88,10 +82,7 @@ export default function AuthVerificationCheck({ children }: { children: React.Re
         return <Navigate to="/auth/login" state={{ from: location }} replace />
     }
 
-    // Nếu đã kiểm tra xong và chưa xác thực email, chuyển đến trang xác thực
-    if (isVerified === false) {
-        return <Navigate to="/auth/verify" state={{ from: location }} replace />
-    }
+
 
     // Nếu đã xác thực email, hiển thị nội dung
     return <>{children}</>
