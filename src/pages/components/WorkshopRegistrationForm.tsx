@@ -25,13 +25,12 @@ import {
     type Workshop,
     type WorkshopRegistration,
     type ProductSelection,
-    type CustomerWorkshopResponse,
+
 
 } from "@/services/workshop-service"
 import { productService, type Product } from "@/services/product-service"
 import { authService } from "@/services/auth-service"
 import CustomerWorkshopList from "./CustomerWorkshopList"
-import ApiResponse from "@/apis/apiUtils"
 
 interface WorkshopRegistrationFormProps {
     workshop: Workshop
@@ -73,8 +72,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     })
 
     // Customer workshop history states
-    const [customerWorkshops, setCustomerWorkshops] = useState<ApiResponse<CustomerWorkshopResponse> | null>(null)
-    const [, setIsLoadingWorkshops] = useState(false)
     const [showWorkshopHistory, setShowWorkshopHistory] = useState(false)
     const [, setRegistrationConfirmed] = useState(false)
     const [registrationData, setRegistrationData] = useState<WorkshopRegistration | null>(null)
@@ -91,7 +88,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
             try {
                 const productMap = new Map<string, Product>()
-                const productSelections = new Map<string, Set<string>>()
 
                 // Fetch details for each product
                 for (const food of workshop.workshopFoodDetails) {
@@ -99,15 +95,14 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                         const response = await productService.getProductById(food.productId)
                         if (response.success && response.result) {
                             productMap.set(food.productId, response.result)
-                            productSelections.set(food.productId, new Set<string>())
                         }
                     } catch (err) {
                         console.error(`Lỗi khi tải sản phẩm ${food.productId}:`, err)
                     }
                 }
-
+                setSelectedProducts(new Map<string, Set<string>>())
                 setProductDetails(productMap)
-                setSelectedProducts(productSelections)
+
             } catch (err) {
                 console.error("Lỗi khi tải thông tin sản phẩm:", err)
                 setError("Không thể tải thông tin sản phẩm")
@@ -254,25 +249,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     }
 
     // Fetch customer workshop history
-    const fetchCustomerWorkshops = async () => {
-        if (!phoneNumber) return
 
-        setIsLoadingWorkshops(true)
-        try {
-            const response = await workshopService.getWorkshopByPhoneCustomer(phoneNumber)
-            if (response.success) {
-                setCustomerWorkshops(response)
-            } else {
-                console.error("Không thể tải lịch sử đăng ký:", response.message)
-                setCustomerWorkshops(null)
-            }
-        } catch (err) {
-            console.error("Lỗi khi tải lịch sử đăng ký:", err)
-            setCustomerWorkshops(null)
-        } finally {
-            setIsLoadingWorkshops(false)
-        }
-    }
 
     // Xử lý khi người dùng xác nhận đăng ký tiếp
     const handleConfirmRegistration = async () => {
@@ -343,12 +320,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             console.log("Đang chuẩn bị dữ liệu đăng ký:", data)
 
 
-
-            // Khởi tạo dữ liệu trước khi fetch để tránh lỗi
-            setCustomerWorkshops(null)
-
-            // Fetch customer workshop history trước khi hiển thị popup
-            await fetchCustomerWorkshops()
 
             // Show workshop history popup với xác nhận đăng ký
             setShowWorkshopHistory(true)
@@ -837,7 +808,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
             {/* Popup hiển thị lịch sử đăng ký workshop */}
             <CustomerWorkshopList
-                workshops={customerWorkshops}
                 isOpen={showWorkshopHistory}
                 onClose={() => {
                     setShowWorkshopHistory(false)

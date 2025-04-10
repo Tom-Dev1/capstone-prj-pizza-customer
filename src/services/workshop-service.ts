@@ -1,6 +1,7 @@
 import { API_ENDPOINTS } from "@/apis/api.config"
 import type ApiResponse from "@/apis/apiUtils"
 import { get, post } from "@/apis/apiUtils"
+import { CustomerWorkshopResponse } from "@/types/customer-workshop.types"
 
 // Types for Workshop Food Details
 export type WorkshopFoodDetail = {
@@ -58,29 +59,7 @@ export interface WorkshopRegistration {
     totalParticipant: number
     products: ProductSelection[]
 }
-export type CustomerWorkshop = {
-    id: string
-    customerPhone: string
-    customerName: string
-    workshopId: string
-    workshop: null
-    workshopRegisterStatus: string
-    registeredAt: string
-    totalParticipant: number
-    orderId: null
-    order: null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    workshopPizzaRegisters: any[]
-    totalFee: number
-    code: string
-    tableId: null
-    tableCode: null
-    table: null
-}
-export type CustomerWorkshopResponse = {
-    items: CustomerWorkshop[];
-    totalCount: number;
-}
+
 /**
  * Workshop Service
  * Handles workshop-related API calls

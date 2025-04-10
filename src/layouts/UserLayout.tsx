@@ -1,19 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Link, useLocation, Navigate, Outlet } from "react-router-dom"
+import { useState, useEffect, useCallback, useTransition } from "react"
+import { useLocation, Navigate, Outlet, useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import Header from "@/components/header"
 import { ShoppingBag, Heart, Calendar, Settings, Home, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 
 const UserLayout = () => {
     const { isAuthenticated, user } = useAuth()
     const location = useLocation()
+    const navigate = useNavigate()
+    const [isPending, startTransition] = useTransition()
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
 
+    // Kiểm tra thiết bị di động
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 1024)
@@ -35,6 +39,21 @@ const UserLayout = () => {
             setIsSidebarOpen(false)
         }
     }, [location.pathname, isMobile])
+
+    // Toggle sidebar
+    const toggleSidebar = useCallback(() => {
+        setIsSidebarOpen((prev) => !prev)
+    }, [])
+
+    // Xử lý chuyển hướng với startTransition
+    const handleNavigation = useCallback(
+        (path: string) => {
+            startTransition(() => {
+                navigate(path)
+            })
+        },
+        [navigate],
+    )
 
     // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
     if (!isAuthenticated) {
@@ -67,7 +86,7 @@ const UserLayout = () => {
             <div className="flex flex-grow pt-16">
                 {/* Lớp phủ cho thiết bị di động */}
                 {isSidebarOpen && isMobile && (
-                    <div className="fixed inset-0 bg-black/30 z-20" onClick={() => setIsSidebarOpen(false)} />
+                    <div className="fixed inset-0 bg-black/30 z-20" onClick={toggleSidebar} aria-hidden="true" />
                 )}
 
                 {/* Thanh bên */}
@@ -86,7 +105,8 @@ const UserLayout = () => {
                     {isMobile && (
                         <button
                             className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
-                            onClick={() => setIsSidebarOpen(false)}
+                            onClick={toggleSidebar}
+                            aria-label="Đóng menu"
                         >
                             <X size={20} />
                         </button>
@@ -118,22 +138,26 @@ const UserLayout = () => {
                     </div>
 
                     {/* Điều hướng */}
-                    <nav className="flex-1 py-4">
+                    <nav className="flex-1 py-4" aria-label="Menu chính">
                         <ul className="space-y-1 px-2">
                             {navigation.map((item) => {
                                 const isActive = location.pathname === item.href
                                 return (
                                     <li key={item.name}>
-                                        <Link
-                                            to={item.href}
+                                        <button
+                                            onClick={() => handleNavigation(item.href)}
                                             className={cn(
-                                                "flex items-center rounded-lg py-3 px-3 text-sm font-medium transition-colors",
+                                                "flex items-center rounded-lg py-3 px-3 text-sm font-medium transition-colors w-full text-left",
                                                 isActive ? "bg-primary/10 text-primary" : "text-gray-700 hover:bg-gray-100",
                                                 !isMobile ? "justify-center group-hover/sidebar:justify-start" : "",
+                                                isPending ? "opacity-70 pointer-events-none" : "",
                                             )}
+                                            aria-current={isActive ? "page" : undefined}
+                                            disabled={isPending}
                                         >
                                             <item.icon
                                                 className={cn("flex-shrink-0 h-5 w-5 ", isActive ? "text-primary" : "text-gray-500")}
+                                                aria-hidden="true"
                                             />
                                             <span
                                                 className={cn(
@@ -143,7 +167,7 @@ const UserLayout = () => {
                                             >
                                                 {item.name}
                                             </span>
-                                        </Link>
+                                        </button>
                                     </li>
                                 )
                             })}
@@ -152,37 +176,48 @@ const UserLayout = () => {
 
                     {/* Phần trang trí */}
                     <div className="p-4 mt-auto border-t">
-                        <div
-                            className={cn(
-                                "bg-primary/5 rounded-lg p-3 flex items-center transition-all duration-300",
-                                !isMobile ? "justify-center group-hover/sidebar:justify-start" : "",
-                            )}
-                        >
-                            <ShoppingBag className="h-5 w-5 text-primary flex-shrink-0" />
-                            <span
+                        <button onClick={() => handleNavigation("/order")} className="w-full text-left" disabled={isPending}>
+                            <div
                                 className={cn(
-                                    "ml-2 text-sm font-medium text-primary transition-all duration-300 whitespace-nowrap",
-                                    !isMobile ? "w-0 opacity-0 group-hover/sidebar:w-auto group-hover/sidebar:opacity-100" : "",
+                                    "bg-primary/5 rounded-lg p-3 flex items-center transition-all duration-300",
+                                    !isMobile ? "justify-center group-hover/sidebar:justify-start" : "",
+                                    isPending ? "opacity-70" : "",
                                 )}
                             >
-                                Đặt Hàng Ngay
-                            </span>
-                        </div>
+                                <ShoppingBag className="h-5 w-5 text-primary flex-shrink-0" aria-hidden="true" />
+                                <span
+                                    className={cn(
+                                        "ml-2 text-sm font-medium text-primary transition-all duration-300 whitespace-nowrap",
+                                        !isMobile ? "w-0 opacity-0 group-hover/sidebar:w-auto group-hover/sidebar:opacity-100" : "",
+                                    )}
+                                >
+                                    Đặt Hàng Ngay
+                                </span>
+                            </div>
+                        </button>
                     </div>
                 </aside>
 
                 {/* Nút mở/đóng sidebar cho thiết bị di động */}
                 {isMobile && (
-                    <button
+                    <Button
+                        variant="default"
+                        size="icon"
                         className="fixed bottom-4 left-4 z-40 bg-primary text-white p-3 rounded-full shadow-lg"
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        onClick={toggleSidebar}
+                        aria-label={isSidebarOpen ? "Đóng menu" : "Mở menu"}
+                        aria-expanded={isSidebarOpen}
+                        aria-controls="sidebar-menu"
                     >
                         <Menu className="h-5 w-5" />
-                    </button>
+                    </Button>
                 )}
 
-                {/* Nội dung chính */}
-                <main className={cn("flex-grow transition-all duration-300 ease-in-out", isMobile ? "w-full" : "ml-20")}>
+
+                <main
+                    className={cn("flex-grow transition-all duration-300 ease-in-out", isMobile ? "w-full" : "ml-20")}
+                    id="main-content"
+                >
                     <div className="container mx-auto px-4 py-8">
                         <Outlet />
                     </div>

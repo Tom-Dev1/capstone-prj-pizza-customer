@@ -186,7 +186,6 @@ export default function Menu() {
                                     <span className="text-primary font-bold text-base md:text-lg">{pizza.price}</span>
                                 </div>
                                 <p className="text-gray-600 mb-3 md:mb-4 text-xs md:text-sm">{pizza.description}</p>
-                                <button className="btn-primary w-full py-2 text-sm md:text-base">Thêm vào giỏ hàng</button>
                             </div>
                         </motion.div>
                     ))}

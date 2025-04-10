@@ -3,63 +3,80 @@
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
+import { ShoppingBag, Heart, Calendar, Settings } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function CustomerDashboard() {
     const { user } = useAuth()
-    console.log(user?.CustomerId);
+
+    const dashboardCards = [
+        {
+            title: "Đơn Hàng Của Tôi",
+            description: "Xem và theo dõi các đơn đặt pizza của bạn",
+            icon: ShoppingBag,
+            link: "/customer/orders",
+            color: "bg-blue-50 text-blue-600",
+        },
+        {
+            title: "Pizza Yêu Thích",
+            description: "Các loại pizza yêu thích đã lưu của bạn",
+            icon: Heart,
+            link: "/customer/favorites",
+            color: "bg-red-50 text-red-600",
+        },
+        {
+            title: "Đăng Ký Khóa Học",
+            description: "Quản lý các khóa học pizza bạn đã đăng ký",
+            icon: Calendar,
+            link: "/customer/workshops",
+            color: "bg-amber-50 text-amber-600",
+        },
+        {
+            title: "Cài Đặt Tài Khoản",
+            description: "Quản lý thông tin cá nhân và bảo mật",
+            icon: Settings,
+            link: "/customer/settings",
+            color: "bg-purple-50 text-purple-600",
+        },
+    ]
 
     return (
-        <div className="">
-            <main className="container mx-auto px-4 py-8">
-                <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-4">Account Information</h2>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-gray-600">Username</p>
-                            <p className="font-medium">{user?.unique_name}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-600">Customer ID</p>
-                            <p className="font-medium">{user?.CustomerId}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-600">Name</p>
-                            <p className="font-medium">{user?.name}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-600">Role</p>
-                            <p className="font-medium">{user?.role}</p>
-                        </div>
-                    </div>
+        <div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold mb-2">Xin chào, {user?.name || "Khách hàng"}!</h1>
+                <p className="text-gray-600">
+                    Chào mừng bạn đến với trang quản lý tài khoản. Từ đây, bạn có thể quản lý đơn hàng, xem pizza yêu thích và
+                    đăng ký các khóa học làm bánh pizza.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {dashboardCards.map((card) => (
+                    <Card key={card.title} className="hover:shadow-md transition-shadow">
+                        <CardHeader className="pb-2 h-48">
+                            <div className={`w-12 h-12 rounded-full ${card.color} flex items-center justify-center mb-2`}>
+                                <card.icon className="h-6 w-6" />
+                            </div>
+                            <CardTitle className="text-lg">{card.title}</CardTitle>
+                            <CardDescription>{card.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Link to={card.link}>
+                                <Button className="w-full">Xem Chi Tiết</Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            <div className="mt-10 bg-primary/5 rounded-lg p-6 border border-primary/20">
+                <h2 className="text-xl font-semibold mb-4">Hoạt Động Gần Đây</h2>
+                <div className="text-center py-8 text-gray-500">
+                    <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-lg font-medium">Không có hoạt động nào gần đây</p>
+                    <p className="mt-1">Các hoạt động của bạn sẽ xuất hiện ở đây</p>
                 </div>
-
-                <div className="grid md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold mb-3">My Orders</h3>
-                        <p className="text-gray-600 mb-4">View and track your pizza orders</p>
-                        <Link to="/customer/orders">
-                            <Button className="w-full bg-primary hover:bg-primary/90">View Orders</Button>
-                        </Link>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold mb-3">Favorite Pizzas</h3>
-                        <p className="text-gray-600 mb-4">Your saved favorite pizza combinations</p>
-                        <Link to="/customer/favorites">
-                            <Button className="w-full bg-primary hover:bg-primary/90">View Favorites</Button>
-                        </Link>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold mb-3">Workshop Bookings</h3>
-                        <p className="text-gray-600 mb-4">Manage your pizza workshop reservations</p>
-                        <Link to="/customer/workshops">
-                            <Button className="w-full bg-primary hover:bg-primary/90">View Bookings</Button>
-                        </Link>
-                    </div>
-                </div>
-            </main>
+            </div>
         </div>
     )
 }
-

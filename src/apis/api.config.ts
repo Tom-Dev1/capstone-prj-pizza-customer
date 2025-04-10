@@ -40,7 +40,7 @@ export const API_ENDPOINTS = {
         DETAILS: (id: string) => `/workshops/${id}?includeProperties=WorkshopFoodDetails`,
         WORKSHOP_REGISTER: "/workshop-register",
         MY_BOOKINGS: "/workshop-bookings",
-        CUSTOMER_WORKSHOPS: (id: string) => `/workshop-register?PhoneNumber=${id}&SortBy=CreatedDate%20desc`
+        CUSTOMER_WORKSHOPS: (id: string) => `/workshop-register?PhoneNumber=${id}&SortBy=CreatedDate%20desc&IncludeProperties=WorkshopPizzaRegisters.WorkshopPizzaRegisterDetails`
     },
 
     RESERVATION: {

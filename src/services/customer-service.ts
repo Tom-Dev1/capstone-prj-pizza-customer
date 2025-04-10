@@ -1,5 +1,7 @@
 import { API_ENDPOINTS } from "@/apis/api.config"
-import ApiResponse, { get } from "@/apis/apiUtils"
+import type ApiResponse from "@/apis/apiUtils"
+import { get } from "@/apis/apiUtils"
+
 export type CustomerProfile = {
     id: string
     fullName: string
@@ -21,7 +23,6 @@ class CustomerService {
             throw error
         }
     }
-
 }
 
 export const customerService = new CustomerService()
