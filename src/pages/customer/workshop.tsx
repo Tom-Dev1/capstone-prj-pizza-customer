@@ -17,6 +17,7 @@ import {
     type WorkshopPizzaRegister,
     type WorkshopPizzaRegisterDetail,
 } from "@/types/customer-workshop.types"
+import { useNavigate } from "react-router-dom"
 
 // Status color mapping
 const statusColorMap: Record<string, string> = {
@@ -40,7 +41,7 @@ export default function CustomerWorkshops() {
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState<string>("all")
     const [phoneNumber, setPhoneNumber] = useState<string>("")
-
+    const navigation = useNavigate()
     // Fetch customer profile to get phone number
     useEffect(() => {
         const fetchCustomerProfile = async () => {
@@ -120,6 +121,10 @@ export default function CustomerWorkshops() {
     const attendedWorkshops = workshops.filter((w) => w.workshopRegisterStatus === WorkshopRegisterStatus.Attended)
     const cancelledWorkshops = workshops.filter((w) => w.workshopRegisterStatus === WorkshopRegisterStatus.Cancel)
 
+    const handleClick = (() => {
+        navigation('/workshop')
+    })
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -128,7 +133,7 @@ export default function CustomerWorkshops() {
                     <p className="text-gray-600">Quản lý và theo dõi các khóa học làm bánh pizza bạn đã đăng ký</p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                    <Button variant="outline" className="flex items-center">
+                    <Button onClick={() => handleClick()} variant="outline" className="flex items-center">
                         <Calendar className="mr-2 h-4 w-4" />
                         Đăng ký khóa học mới
                     </Button>
