@@ -1,6 +1,21 @@
+"use client"
+
 import type React from "react"
+
 import { useState, useEffect } from "react"
-import { X, Loader2, AlertCircle, Check, Phone, ArrowRight, Users, Calendar, Wallet, Pizza } from "lucide-react"
+import {
+    X,
+    Loader2,
+    AlertCircle,
+    Check,
+    Phone,
+    ArrowRight,
+    Users,
+    Calendar,
+    DollarSign,
+    Pizza,
+    RefreshCw,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,14 +25,13 @@ import {
     type Workshop,
     type WorkshopRegistration,
     type ProductSelection,
+    type CustomerWorkshopResponse,
 
-    CustomerWorkshopResponse,
 } from "@/services/workshop-service"
 import { productService, type Product } from "@/services/product-service"
 import { authService } from "@/services/auth-service"
 import CustomerWorkshopList from "./CustomerWorkshopList"
 import ApiResponse from "@/apis/apiUtils"
-import { toast } from "react-toastify"
 
 interface WorkshopRegistrationFormProps {
     workshop: Workshop
@@ -66,6 +80,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     const [registrationData, setRegistrationData] = useState<WorkshopRegistration | null>(null)
 
 
+
     // Fetch product details for all workshop food options
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -84,6 +99,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                         const response = await productService.getProductById(food.productId)
                         if (response.success && response.result) {
                             productMap.set(food.productId, response.result)
+                            productSelections.set(food.productId, new Set<string>())
                         }
                     } catch (err) {
                         console.error(`Lỗi khi tải sản phẩm ${food.productId}:`, err)
@@ -164,6 +180,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             const response = await authService.verifyOtp(phoneNumber, otp)
 
             if (response.success) {
+                // Store verified phone and OTP in localStorage
 
                 // Update state
                 setIsPhoneVerified(true)
@@ -244,10 +261,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         try {
             const response = await workshopService.getWorkshopByPhoneCustomer(phoneNumber)
             if (response.success) {
-                if (response.result) {
-
-                    setCustomerWorkshops(response)
-                }
+                setCustomerWorkshops(response)
             } else {
                 console.error("Không thể tải lịch sử đăng ký:", response.message)
                 setCustomerWorkshops(null)
@@ -270,17 +284,8 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         try {
             // Gửi dữ liệu đăng ký
             const response = await workshopService.workShopRegistration(registrationData)
-            console.log("Đăng ký khóa học:", response);
 
             if (response.success) {
-                toast.success("Đăng ký khóa học thành công!", {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                })
                 setSuccess("Đăng ký khóa học thành công!")
                 setRegistrationConfirmed(true)
 
@@ -290,14 +295,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                     onClose()
                 }, 2000)
             } else {
-                toast.error("Đăng ký Workshop thất bại!", {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                })
                 setError(response.message || "Đăng ký thất bại")
             }
         } catch (err) {
@@ -320,7 +317,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             const products: ProductSelection[] = []
 
             selectedProducts.forEach((optionItems, productId) => {
-                // Chỉ thêm sản phẩm vào danh sách nếu nó được chọn
+                // Chỉ thêm sản phẩm vào danh sách nếu nó được chọn và có ít nhất một option được chọn
                 if (optionItems.size > 0) {
                     products.push({
                         productId,
@@ -328,6 +325,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                     })
                 }
             })
+
             // Cập nhật cấu trúc dữ liệu đăng ký theo yêu cầu mới
             const data: WorkshopRegistration = {
                 phoneNumber: phoneNumber,
@@ -344,15 +342,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
             console.log("Đang chuẩn bị dữ liệu đăng ký:", data)
 
-            // Lưu thông tin khách vào localStorage để sử dụng sau này
-            localStorage.setItem(
-                "guest_info",
-                JSON.stringify({
-                    name: guestInfo.name,
-                    email: guestInfo.email,
-                    phone: phoneNumber,
-                }),
-            )
+
 
             // Khởi tạo dữ liệu trước khi fetch để tránh lỗi
             setCustomerWorkshops(null)
@@ -370,14 +360,51 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         }
     }
 
+    // Thêm hàm xử lý radio button (chỉ chọn một option)
+    const handleRadioOptionChange = (productId: string, optionId: string, selectedItemId: string) => {
+        const updatedSelections = new Map(selectedProducts)
+        const productOptions = updatedSelections.get(productId) || new Set<string>()
+
+        // Xóa tất cả các optionItems khác thuộc cùng một option
+        const product = productDetails.get(productId)
+        if (product) {
+            const option = product.options.find((opt) => opt.id === optionId)
+            if (option) {
+                // Xóa tất cả các optionItems của option này
+                option.optionItems.forEach((item) => {
+                    productOptions.delete(item.id)
+                })
+            }
+        }
+
+        // Thêm optionItem mới được chọn
+        productOptions.add(selectedItemId)
+
+        updatedSelections.set(productId, productOptions)
+        setSelectedProducts(updatedSelections)
+    }
+
+    // Hàm xử lý đổi số điện thoại
+    const handleChangePhoneNumber = () => {
+        // Xóa thông tin xác thực số điện thoại
+
+        // Reset các state liên quan
+        setIsPhoneVerified(false)
+        setOtp("")
+
+        // Quay lại bước nhập số điện thoại
+        setCurrentStep(FormStep.PHONE_INPUT)
+    }
+
     // Reset form when closing
     const handleClose = () => {
         // Only reset if not in the middle of registration form
-        setCurrentStep(FormStep.PHONE_INPUT)
-        setPhoneNumber("")
-        setOtp("")
-        setOtpError(null)
-        setIsPhoneVerified(false)
+        if (currentStep !== FormStep.REGISTRATION_FORM) {
+            setCurrentStep(FormStep.PHONE_INPUT)
+            setPhoneNumber("")
+            setOtp("")
+            setOtpError(null)
+        }
         onClose()
     }
 
@@ -580,23 +607,32 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                         placeholder="example@gmail.com"
                                                         required
                                                     />
-                                                    <p className="text-xs flex items-center mt-1 italic text-gray-500">
-                                                        (*Nhập đúng để nhận mã đăng ký của bạn)
-                                                    </p>
                                                 </div>
 
                                                 <div>
                                                     <Label htmlFor="phone">Số điện thoại</Label>
-                                                    <div className="relative">
-                                                        <Input
-                                                            id="phone"
-                                                            name="phone"
-                                                            type="tel"
-                                                            value={guestInfo.phone}
-                                                            readOnly
-                                                            className="bg-gray-50 pr-8"
-                                                        />
-                                                        <Check className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+                                                    <div className="flex items-center space-x-2">
+                                                        <div className="relative flex-grow">
+                                                            <Input
+                                                                id="phone"
+                                                                name="phone"
+                                                                type="tel"
+                                                                value={guestInfo.phone}
+                                                                readOnly
+                                                                className="bg-gray-50 pr-8"
+                                                            />
+                                                            <Check className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={handleChangePhoneNumber}
+                                                            className="whitespace-nowrap h-9"
+                                                        >
+                                                            <RefreshCw className="h-3 w-3 mr-1" />
+                                                            Đổi SĐT
+                                                        </Button>
                                                     </div>
                                                     <p className="text-xs text-green-600 flex items-center mt-1">
                                                         <Check className="h-3 w-3 mr-1" />
@@ -646,13 +682,13 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                         {/* Tổng chi phí */}
                                         <div className="bg-gray-50 p-3 rounded-md border">
                                             <h5 className="font-medium flex items-center">
-                                                <Wallet className="h-4 w-4 mr-2" />
+                                                <DollarSign className="h-4 w-4 mr-2" />
                                                 Chi phí
                                             </h5>
                                             <div className="mt-3 space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Phí tham gia:</span>
-                                                    <span>{workshop.totalFee.toLocaleString()}VND</span>
+                                                    <span>{workshop.totalFee.toLocaleString()} VND / người</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Số lượng người:</span>
@@ -662,7 +698,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                     <div className="flex justify-between font-bold">
                                                         <span>Tổng cộng:</span>
                                                         <span className="text-primary">
-                                                            {workshop.totalFee.toLocaleString()}VND
+                                                            {(totalParticipants * workshop.totalFee).toLocaleString()} VND
                                                         </span>
                                                     </div>
                                                 </div>
@@ -713,12 +749,27 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                                                         className="flex items-center justify-between bg-gray-50 p-1 rounded"
                                                                                     >
                                                                                         <div className="flex items-center">
-                                                                                            <Checkbox
-                                                                                                id={`option-${item.id}`}
-                                                                                                checked={isOptionItemSelected(food.productId, item.id)}
-                                                                                                onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
-
-                                                                                            />
+                                                                                            {option.selectMany ? (
+                                                                                                // Checkbox cho phép chọn nhiều
+                                                                                                <Checkbox
+                                                                                                    id={`option-${item.id}`}
+                                                                                                    checked={isOptionItemSelected(food.productId, item.id)}
+                                                                                                    onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
+                                                                                                    className=""
+                                                                                                />
+                                                                                            ) : (
+                                                                                                // Radio button chỉ cho phép chọn một
+                                                                                                <input
+                                                                                                    type="radio"
+                                                                                                    id={`option-${item.id}`}
+                                                                                                    name={`option-${option.id}-${food.productId}`}
+                                                                                                    checked={isOptionItemSelected(food.productId, item.id)}
+                                                                                                    onChange={() =>
+                                                                                                        handleRadioOptionChange(food.productId, option.id, item.id)
+                                                                                                    }
+                                                                                                    className="h-3 w-3 text-primary"
+                                                                                                />
+                                                                                            )}
                                                                                             <Label htmlFor={`option-${item.id}`} className="ml-1 text-xs">
                                                                                                 {item.name}
                                                                                             </Label>
@@ -798,4 +849,3 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         </>
     )
 }
-

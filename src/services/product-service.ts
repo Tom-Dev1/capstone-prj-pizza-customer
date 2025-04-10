@@ -14,6 +14,7 @@ export interface OptionItems {
 export interface ProductOption {
     id: string
     name: string
+    selectMany: boolean
     optionItems: OptionItems[]
 }
 
