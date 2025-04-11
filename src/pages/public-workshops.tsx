@@ -13,7 +13,7 @@ export default function PublicWorkshops() {
     const [workshops, setWorkshops] = useState<Workshop[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [totalCount, setTotalCount] = useState(0)
+    const [, setTotalCount] = useState(0)
     const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null)
     const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false)
     const [upcomingWorkshops, setUpcomingWorkshops] = useState<Workshop[]>([])
@@ -37,7 +37,8 @@ export default function PublicWorkshops() {
                         const scheduledWorkshops = response.result.items.filter(
                             (workshop) =>
                                 workshop.workshopStatus === WorkshopStatus.Scheduled ||
-                                workshop.workshopStatus === WorkshopStatus.Opening,
+                                workshop.workshopStatus === WorkshopStatus.OpeningToRegister ||
+                                workshop.workshopStatus === WorkshopStatus.ClosedRegister,
                         )
 
                         // Xác định các workshop sắp diễn ra (trong vòng 7 ngày tới)
@@ -56,7 +57,7 @@ export default function PublicWorkshops() {
                                 const workshopDate = new Date(workshop.workshopDate)
                                 return workshopDate >= now && workshopDate <= oneWeekFromNow
                             })
-                            .slice(0, 3) // Chỉ lấy tối đa 3 workshop sắp diễn ra
+                            .slice(0, 4) // Chỉ lấy tối đa 3 workshop sắp diễn ra
 
                         // Lấy tất cả các workshop còn lại (không nằm trong danh sách upcoming)
                         const upcomingIds = new Set(upcoming.map((w) => w.id))
@@ -115,7 +116,7 @@ export default function PublicWorkshops() {
                     className="fixed inset-0 -z-10 bg-cover bg-center"
                     style={{
                         backgroundImage: `url(${makepizza})`,
-                        backgroundAttachment: "fixed",         // 👈 giữ ảnh cố định khi scroll
+                        backgroundAttachment: "fixed",         // giữ ảnh cố định khi scroll
                         backgroundRepeat: "no-repeat",
                         backgroundSize: "cover",
                         backgroundPosition: "bottom",
@@ -161,9 +162,9 @@ export default function PublicWorkshops() {
                 {!isLoading && !error && workshops.length > 0 && (
                     <>
                         <div className="mb-6">
-                            <p className="text-white">
+                            {/* <p className="text-white">
                                 Hiển thị {workshops.length} khóa học đã lên lịch (Tổng số khóa học: {totalCount})
-                            </p>
+                            </p> */}
                             <p className="text-sm text-white">
                                 {upcomingWorkshops.length} khóa học sắp diễn ra • {regularWorkshops.length} khóa học khác
                             </p>

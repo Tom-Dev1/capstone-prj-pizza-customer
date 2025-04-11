@@ -14,8 +14,9 @@ import { getWorkshopStatusVi } from "@/constants/workshop"
 const statusColorMap: Record<string, string> = {
     Scheduled: "bg-blue-500",
     Opening: "bg-green-500",
+    OpeningToRegister: " bg-green-500",
     Closed: "bg-gray-500",
-    Approved: "bg-purple-500",
+    ClosedRegister: "bg-purple-500",
     Cancelled: "bg-red-500",
 }
 

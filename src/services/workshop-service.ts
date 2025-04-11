@@ -36,9 +36,10 @@ export type Workshop = {
 }
 export enum WorkshopStatus {
     Scheduled = 'Scheduled',
-    Opening = 'Opening',
+    OpeningToRegister = 'OpeningToRegister',
+    ClosedRegister = 'ClosedRegister',
+    Opening = 'Openning',
     Closed = 'Closed',
-    Approved = 'Approved',
     Cancelled = 'Cancelled'
 }
 export type WorkshopResponse = {

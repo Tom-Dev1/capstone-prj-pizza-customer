@@ -8,8 +8,10 @@ export function getWorkshopStatusVi(status: WorkshopStatus): string {
             return 'Đang mở';
         case WorkshopStatus.Closed:
             return 'Đã kết thúc';
-        case WorkshopStatus.Approved:
-            return 'Đã duyệt';
+        case WorkshopStatus.OpeningToRegister:
+            return 'Mở đăng ký';
+        case WorkshopStatus.ClosedRegister:
+            return 'Đóng đăng ký';
         case WorkshopStatus.Cancelled:
             return 'Đã hủy';
         default:
