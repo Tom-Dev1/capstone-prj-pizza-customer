@@ -249,7 +249,7 @@ export default function BookingForm() {
                     setErrors(apiErrors)
                 } else {
                     // Set general error message
-                    setApiError(response.message || "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.")
+                    setApiError(response.message || "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.!!")
                 }
             }
         } catch (error) {
