@@ -36,7 +36,7 @@ export const API_ENDPOINTS = {
 
     // Workshop endpoints
     WORKSHOP: {
-        GET_WORKSHOP: "/workshops?TakeCount=1000&SortBy=CreatedDate%20desc%20&IncludeProperties=WorkshopFoodDetails",
+        GET_WORKSHOP: `/workshops?TakeCount=1000&SortBy=CreatedDate%20desc&IncludeProperties=WorkshopFoodDetails`,
         DETAILS: (id: string) => `/workshops/${id}?includeProperties=WorkshopFoodDetails`,
         WORKSHOP_REGISTER: "/workshop-register",
         MY_BOOKINGS: "/workshop-bookings",

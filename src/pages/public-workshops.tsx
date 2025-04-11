@@ -25,6 +25,8 @@ export default function PublicWorkshops() {
             try {
                 setIsLoading(true)
                 const response = await workshopService.getAllWorkshops()
+                console.log(response.result);
+
                 if (response.success && response.result) {
                     // Store the total count
                     setTotalCount(response.result.totalCount)
