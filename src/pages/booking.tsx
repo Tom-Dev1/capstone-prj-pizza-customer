@@ -2,7 +2,7 @@ import BookingForm from "@/components/booking-form";
 import pizza from "@/assets/pizzwindown.jpg";
 export default function Booking() {
     return (
-        <div className="h-screen flex flex-col bg-gray-50">
+        <div className="flex flex-col bg-gray-50">
             <div className="container mx-auto px-4 flex flex-col  py-10">
                 <div className="max-w-4xl mx-auto w-full flex flex-col">
                     <div className="text-center mb-6">
