@@ -236,25 +236,13 @@ export default function BookingForm() {
                 console.log("Booking successful:", response.result)
                 setIsSubmitted(true)
             } else {
-                // Handle validation errors from API
-                if (response.statusCode) {
-                    const apiErrors: FormErrors = {}
 
-                    Object.entries(response.message).forEach(([key, messages]) => {
-                        if (key in formData && messages.length > 0) {
-                            apiErrors[key as keyof FormErrors] = messages[0]
-                        }
-                    })
+                setApiError(response.message || "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.!!")
 
-                    setErrors(apiErrors)
-                } else {
-                    // Set general error message
-                    setApiError(response.message || "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.!!")
-                }
             }
         } catch (error) {
             console.error("Error submitting booking:", error)
-            setApiError("Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.")
+            // setApiError("Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.")
         } finally {
             setIsSubmitting(false)
         }

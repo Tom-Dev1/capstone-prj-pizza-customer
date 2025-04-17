@@ -8,7 +8,15 @@ export default interface ApiResponse<T> {
     statusCode: number
 
 }
-
+export type ApiErrorResponse = {
+    error: {
+        code: number
+        message: string
+        statusCode: number
+        timestamp: string
+        title: string
+    }
+}
 export const get = async <T>(url: string, params?: object)
     : Promise<ApiResponse<T>> => {
     try {
@@ -31,12 +39,12 @@ export const post = async <T>(url: string, data: object, config?: any): Promise<
         const response: AxiosResponse<ApiResponse<T>> = await api.post(url, data, config)
         return response.data;
     } catch (error) {
-        const axiosError = error as AxiosError
+        const axiosError = error as ApiErrorResponse
         return {
             success: false,
-            result: { axiosError } as T,
-            message: axiosError.message,
-            statusCode: axiosError.response?.status || 500,
+            result: {} as T,
+            message: axiosError.error.message,
+            statusCode: axiosError.error.statusCode || 500,
 
         };
     }
