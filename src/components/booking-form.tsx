@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Calendar, Clock, Users, Phone, User, Check, Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { type BookingFormData, reservationService } from "@/services/reservations-service"
 import { authService } from "@/services/auth-service"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type FormErrors = {
     customerName?: string
@@ -35,6 +36,15 @@ export default function BookingForm() {
         numberOfPeople: 2,
     })
 
+    // Thêm state mới để lưu trữ ngày, giờ và phút riêng biệt
+    const [dateTimeInputs, setDateTimeInputs] = useState(() => {
+        const now = new Date()
+        return {
+            date: now.toISOString().split("T")[0],
+            time: "", // Không đặt giá trị mặc định cho time
+        }
+    })
+
     const [errors, setErrors] = useState<FormErrors>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
@@ -47,6 +57,56 @@ export default function BookingForm() {
     const [isSendingOtp, setIsSendingOtp] = useState(false)
     const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
     const [otpError, setOtpError] = useState<string | null>(null)
+
+    // Khởi tạo dateTimeInputs từ formData.bookingTime
+    useEffect(() => {
+        if (formData.bookingTime) {
+            try {
+                const dateTime = new Date(formData.bookingTime)
+
+                // Kiểm tra xem ngày giờ có hợp lệ không
+                if (!isNaN(dateTime.getTime())) {
+                    setDateTimeInputs({
+                        date: dateTime.toISOString().split("T")[0],
+                        time: "", // Không đặt giá trị mặc định cho time
+                    })
+                }
+            } catch (error) {
+                console.error("Error parsing booking time:", error)
+            }
+        }
+    }, [])
+
+    // Thay đổi hàm timeOptions để hiển thị thời gian tiếp theo chính xác hơn
+    const timeOptions = useMemo(() => {
+        const times = []
+        const now = new Date()
+        const today = now.toISOString().split("T")[0]
+        const isToday = dateTimeInputs.date === today
+
+        // Tính toán thời gian tiếp theo (làm tròn lên đến 15 phút tiếp theo)
+        const currentHour = now.getHours()
+        const currentMinute = now.getMinutes()
+        const minuteRoundUp = Math.ceil(currentMinute / 15) * 15
+
+        for (let hour = 0; hour <= 23; hour++) {
+            for (let minute = 0; minute < 60; minute += 15) {
+                // Nếu là ngày hôm nay, chỉ hiển thị thời gian trong tương lai
+                if (isToday) {
+                    // Nếu giờ nhỏ hơn giờ hiện tại, bỏ qua
+                    if (hour < currentHour) continue
+
+                    // Nếu cùng giờ nhưng phút nhỏ hơn phút hiện tại đã làm tròn lên, bỏ qua
+                    if (hour === currentHour && minute < minuteRoundUp) continue
+                }
+
+                const formattedHour = hour.toString().padStart(2, "0")
+                const formattedMinute = minute.toString().padStart(2, "0")
+                times.push(`${formattedHour}:${formattedMinute}`)
+            }
+        }
+        return times
+    }, [dateTimeInputs.date])
 
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {}
@@ -66,7 +126,7 @@ export default function BookingForm() {
             newErrors.phoneNumber = "Vui lòng xác thực số điện thoại"
         }
 
-        if (!formData.bookingTime) {
+        if (!formData.bookingTime || !dateTimeInputs.time) {
             newErrors.bookingTime = "Vui lòng chọn thời gian đặt bàn"
         } else {
             const selectedTime = new Date(formData.bookingTime)
@@ -100,6 +160,95 @@ export default function BookingForm() {
                 ...prev,
                 [name]: undefined,
             }))
+        }
+    }
+
+    // Thêm logic để không cho phép chọn ngày trong quá khứ
+    // Thêm đoạn này vào phần xử lý thay đổi ngày
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = e.target
+
+        // Kiểm tra ngày có phải trong quá khứ không
+        const selectedDate = new Date(value)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (selectedDate < today) {
+            setErrors((prev) => ({
+                ...prev,
+                bookingTime: "Không thể chọn ngày trong quá khứ",
+            }))
+            return
+        }
+
+        setDateTimeInputs((prev) => ({
+            ...prev,
+            date: value,
+            time: "", // Reset time khi thay đổi ngày
+        }))
+
+        // Reset error for bookingTime
+        if (errors.bookingTime) {
+            setErrors((prev) => ({
+                ...prev,
+                bookingTime: undefined,
+            }))
+        }
+    }
+
+    // Xử lý thay đổi thời gian
+    const handleTimeChange = (value: string) => {
+        if (!value || !value.includes(":")) {
+            console.error("Invalid time format:", value)
+            return
+        }
+
+        setDateTimeInputs((prev) => ({
+            ...prev,
+            time: value,
+        }))
+
+        const [hour, minute] = value.split(":")
+        if (hour && minute) {
+            updateBookingTime(dateTimeInputs.date, hour, minute)
+        }
+    }
+
+    // Cập nhật bookingTime từ các thành phần ngày, giờ, phút
+    const updateBookingTime = (date: string, hour: string, minute: string) => {
+        try {
+            // Kiểm tra giá trị hợp lệ
+            const hourNum = Number.parseInt(hour, 10)
+            const minuteNum = Number.parseInt(minute, 10)
+
+            if (isNaN(hourNum) || isNaN(minuteNum) || hourNum < 0 || hourNum > 23 || minuteNum < 0 || minuteNum > 59) {
+                console.error("Invalid time values:", hour, minute)
+                return
+            }
+
+            const isoString = `${date}T${hour}:${minute}:00`
+            const testDate = new Date(isoString)
+
+            // Kiểm tra xem ngày giờ có hợp lệ không
+            if (isNaN(testDate.getTime())) {
+                console.error("Invalid date created:", isoString)
+                return
+            }
+
+            setFormData((prev) => ({
+                ...prev,
+                bookingTime: isoString,
+            }))
+
+            // Reset error for bookingTime
+            if (errors.bookingTime) {
+                setErrors((prev) => ({
+                    ...prev,
+                    bookingTime: undefined,
+                }))
+            }
+        } catch (error) {
+            console.error("Error updating booking time:", error)
         }
     }
 
@@ -236,9 +385,7 @@ export default function BookingForm() {
                 console.log("Booking successful:", response.result)
                 setIsSubmitted(true)
             } else {
-
                 setApiError(response.message || "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.!!")
-
             }
         } catch (error) {
             console.error("Error submitting booking:", error)
@@ -249,12 +396,17 @@ export default function BookingForm() {
     }
 
     const resetForm = () => {
+        const now = new Date()
         setFormData({
             customerName: "",
             phoneNumber: "",
             phoneOtp: "",
-            bookingTime: new Date().toISOString().slice(0, 16),
+            bookingTime: now.toISOString().slice(0, 16),
             numberOfPeople: 2,
+        })
+        setDateTimeInputs({
+            date: now.toISOString().split("T")[0],
+            time: "", // Không đặt giá trị mặc định cho time
         })
         setIsSubmitted(false)
         setErrors({})
@@ -302,6 +454,7 @@ export default function BookingForm() {
                             {new Date(formData.bookingTime).toLocaleTimeString("vi-VN", {
                                 hour: "2-digit",
                                 minute: "2-digit",
+                                hour12: false,
                             })}
                         </span>
                     </div>
@@ -385,7 +538,6 @@ export default function BookingForm() {
                                 onClick={handleSendOtp}
                                 disabled={isSendingOtp || formData.phoneNumber.length < 10}
                                 className="whitespace-nowrap h-9"
-
                             >
                                 {isSendingOtp ? (
                                     <>
@@ -404,7 +556,6 @@ export default function BookingForm() {
                                 onClick={handleResetPhoneVerification}
                                 variant="outline"
                                 className="whitespace-nowrap h-9"
-
                             >
                                 <RefreshCw className="w-4 h-4 mr-1" />
                                 Đổi SĐT
@@ -417,7 +568,7 @@ export default function BookingForm() {
                     {phoneVerificationStep === PhoneVerificationStep.OTP_VERIFICATION && (
                         <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-100">
                             <div className="text-sm text-blue-700 font-medium mb-1">
-                                Mã OTP đã được gửi đến  {formData.phoneNumber}
+                                Mã OTP đã được gửi đến {formData.phoneNumber}
                             </div>
 
                             <div className="flex space-x-2">
@@ -436,8 +587,7 @@ export default function BookingForm() {
                                     type="button"
                                     onClick={handleVerifyOtp}
                                     disabled={isVerifyingOtp || !formData.phoneOtp}
-                                    className="whitespace-nowrap h-9 "
-
+                                    className="whitespace-nowrap h-9"
                                 >
                                     {isVerifyingOtp ? (
                                         <>
@@ -487,24 +637,46 @@ export default function BookingForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="bookingTime" className="text-gray-700">
+                    <Label htmlFor="bookingDate" className="text-gray-700">
                         Thời gian đặt bàn <span className="text-red-500">*</span>
                     </Label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Calendar className="w-5 h-5 text-gray-400" />
+                    <div className="flex space-x-2">
+                        <div className="">
+
+                            <Input
+                                id="date"
+                                name="date"
+                                type="date"
+                                value={dateTimeInputs.date}
+                                onChange={handleDateChange}
+                                min={new Date().toISOString().split("T")[0]}
+                                className={cn(" w-[220px]", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}
+                            />
                         </div>
-                        <Input
-                            id="bookingTime"
-                            name="bookingTime"
-                            type="datetime-local"
-                            value={formData.bookingTime}
-                            onChange={handleChange}
-                            className={cn("pl-10", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}
-                        />
+
+                        <div className="w-36 font-sans">
+                            <Select value={dateTimeInputs.time} onValueChange={handleTimeChange}>
+                                <SelectTrigger className={cn("h-9", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}>
+                                    <SelectValue placeholder="Chọn thời gian" />
+                                </SelectTrigger>
+                                <SelectContent className="h-[280px] flex overflow-y-auto font-sans">
+                                    {timeOptions.length > 0 ? (
+                                        timeOptions.map((time) => (
+                                            <SelectItem key={`time-${time}`} value={time}>
+                                                {time}
+                                            </SelectItem>
+                                        ))
+                                    ) : (
+                                        <div className="p-2 text-center text-sm text-gray-500">
+                                            Không có khung giờ phù hợp. Vui lòng chọn ngày khác.
+                                        </div>
+                                    )}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
-                    {errors.bookingTime && <p className="text-red-500 text-sm mt-1">{errors.bookingTime}</p>}
                 </div>
+                {errors.bookingTime && <p className="text-red-500 text-sm mt-1">{errors.bookingTime}</p>}
 
                 <div className="space-y-2">
                     <Label htmlFor="numberOfPeople" className="text-gray-700">
@@ -532,7 +704,7 @@ export default function BookingForm() {
                     <Button
                         type="submit"
                         className="w-full bg-primary hover:bg-primary/90 text-white py-3"
-                        disabled={isSubmitting || phoneVerificationStep !== PhoneVerificationStep.VERIFIED}
+                        disabled={isSubmitting || phoneVerificationStep !== PhoneVerificationStep.VERIFIED || !dateTimeInputs.time}
                     >
                         {isSubmitting ? (
                             <>
@@ -548,4 +720,3 @@ export default function BookingForm() {
         </motion.div>
     )
 }
-
