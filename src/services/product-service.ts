@@ -1,39 +1,7 @@
 import { API_ENDPOINTS } from "@/apis/api.config"
 import type ApiResponse from "@/apis/apiUtils"
 import { get } from "@/apis/apiUtils"
-
-// Product Types
-export type ProductType = "ColdKitchen" | "HotKitchen"
-
-export interface OptionItems {
-    id: string
-    name: string
-    additionalPrice: number
-}
-
-export interface ProductOption {
-    id: string
-    name: string
-    selectMany: boolean
-    optionItems: OptionItems[]
-}
-
-export interface Product {
-    id: string
-    name: string
-    price: number
-    image: string
-    description: string
-    categoryId: string
-    productType: ProductType
-    category: null
-    options: ProductOption[]
-}
-
-export interface ProductsResponse {
-    items: Product[]
-    totalCount: number
-}
+import { Product } from "@/types/product"
 
 /**
  * Product Service

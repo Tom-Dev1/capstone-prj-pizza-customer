@@ -29,7 +29,7 @@ export const API_ENDPOINTS = {
     // Product endpoints
     PRODUCT: {
         P_LIST: "/products?IncludeProperties=Options.OptionItems",
-        P_DETAILS: (id: string) => `/products/${id}?includeProperties=Options.OptionItems`,
+        P_DETAILS: (id: string) => `products/${id}?includeProperties=Category%2CProductOptions.Option.OptionItems%2CProductComboSlots%2CRecipes.Ingredient%2CProductComboSlots.ProductComboSlotItems.Product%2CChildProducts`,
         FEATURED: "/products/featured",
         CATEGORIES: "/product-categories",
     },

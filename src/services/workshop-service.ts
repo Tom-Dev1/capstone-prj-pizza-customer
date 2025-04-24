@@ -28,9 +28,8 @@ export type Workshop = {
     maxRegister: number
     maxPizzaPerRegister: number
     maxParticipantPerRegister: number
+    totalRegisteredParticipant: number
     workshopStatus: WorkshopStatus // Add other possible statuses if needed
-    zoneId: string
-    //   zone: null | any // Replace with proper type if available
     zoneName: string
     workshopFoodDetails: WorkshopFoodDetail[]
 }

@@ -1,11 +1,13 @@
-"use client"
 
 import { useState, useEffect } from "react"
-import { productService, type Product, type ProductOption } from "@/services/product-service"
-import { Loader2, AlertCircle, Pizza, ChevronDown, ChevronUp, Plus } from "lucide-react"
+
+import type { Product, ProductOption } from "@/types/product"
+import { Loader2, AlertCircle, Pizza, ChevronDown, ChevronUp, Plus, Package } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { getOption, getOptionItems, hasChildProducts } from "@/utils/product-helpers"
+import { productService } from "@/services"
 
 interface ProductDetailsProps {
     productId: string
@@ -16,6 +18,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [showOptions, setShowOptions] = useState(false)
+    const [showChildProducts, setShowChildProducts] = useState(false)
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -27,6 +30,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
 
                 if (response.success && response.result) {
                     setProduct(response.result)
+                    console.log("Product loaded:", response.result)
                 } else {
                     setError(response.message || "Failed to fetch product details")
                 }
@@ -65,14 +69,19 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
         return <div className="text-sm text-gray-500 p-2">Product information not available</div>
     }
 
+    // Ensure productOptions is always an array
+    const productOptions = product.productOptions || []
+    const hasOptions = productOptions.length > 0
+    const hasChilds = hasChildProducts(product)
+
     return (
         <Card className="overflow-hidden border-dashed border-primary/30 bg-primary/5 mb-2">
             <CardContent className="p-3">
                 <div className="flex items-start">
-                    {product.image && (
+                    {product.imageUrl && (
                         <div className="flex-shrink-0 mr-3">
                             <img
-                                src={`data:image/jpeg;base64,` + product.image || "/placeholder.svg"}
+                                src={product.imageUrl || "/placeholder.svg"}
                                 alt={product.name}
                                 className="w-16 h-16 object-cover rounded-md"
                                 onError={(e) => {
@@ -89,60 +98,110 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                 {product.name}
                             </h4>
                             <Badge variant="outline" className="ml-2 text-xs">
-                                {product.productType}
+                                {product.productRole}
                             </Badge>
                         </div>
                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
                         <div className="mt-1 font-semibold text-primary">{product.price.toLocaleString()} VND</div>
 
-                        {/* Toggle options button */}
-                        {product.options && product.options.length > 0 && (
-                            <button
-                                onClick={() => setShowOptions(!showOptions)}
-                                className="mt-2 text-xs flex items-center text-primary hover:text-primary/80 transition-colors"
-                            >
-                                {showOptions ? (
-                                    <>
-                                        <ChevronUp className="h-3 w-3 mr-1" />
-                                        Hide options
-                                    </>
-                                ) : (
-                                    <>
-                                        <ChevronDown className="h-3 w-3 mr-1" />
-                                        Show options ({product.options.length})
-                                    </>
-                                )}
-                            </button>
-                        )}
+                        <div className="flex space-x-2 mt-2">
+                            {/* Toggle options button */}
+                            {hasOptions && (
+                                <button
+                                    onClick={() => setShowOptions(!showOptions)}
+                                    className="text-xs flex items-center text-primary hover:text-primary/80 transition-colors"
+                                >
+                                    {showOptions ? (
+                                        <>
+                                            <ChevronUp className="h-3 w-3 mr-1" />
+                                            Hide options
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="h-3 w-3 mr-1" />
+                                            Show options ({productOptions.length})
+                                        </>
+                                    )}
+                                </button>
+                            )}
+
+                            {/* Toggle child products button */}
+                            {hasChilds && (
+                                <button
+                                    onClick={() => setShowChildProducts(!showChildProducts)}
+                                    className="text-xs flex items-center text-primary hover:text-primary/80 transition-colors"
+                                >
+                                    {showChildProducts ? (
+                                        <>
+                                            <ChevronUp className="h-3 w-3 mr-1" />
+                                            Hide variants
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="h-3 w-3 mr-1" />
+                                            Show variants ({product.childProducts.length})
+                                        </>
+                                    )}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
+                {/* Child products */}
+                {product.productRole === "Master" &&
+                    product.childProducts &&
+                    product.childProducts.length > 0 &&
+                    showChildProducts && (
+                        <div className="mt-3 border-t border-dashed border-primary/20 pt-2">
+                            <h5 className="text-sm font-medium flex items-center mb-2">
+                                <Package className="h-4 w-4 mr-1 text-primary" />
+                                Các loại sản phẩm
+                            </h5>
+                            <div className="space-y-1 pl-2">
+                                {product.childProducts.map((childProduct) => (
+                                    <div key={childProduct.id} className="flex justify-between text-xs py-1 bg-white p-2 rounded-md">
+                                        <span>{childProduct.name}</span>
+                                        <span className="font-medium">{childProduct.price.toLocaleString()} VND</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                 {/* Product options */}
-                {showOptions && product.options && product.options.length > 0 && (
+                {hasOptions && showOptions && (
                     <div className="mt-3 border-t border-dashed border-primary/20 pt-2">
                         <Accordion type="single" collapsible className="w-full">
-                            {product.options.map((option: ProductOption) => (
-                                <AccordionItem key={option.id} value={option.id} className="border-b-0">
-                                    <AccordionTrigger className="py-2 text-sm font-medium hover:no-underline">
-                                        {option.name}
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <div className="space-y-1 pl-2">
-                                            {option.optionItems.map((item) => (
-                                                <div key={item.id} className="flex justify-between text-xs py-1">
-                                                    <span className="flex items-center">
-                                                        <Plus className="h-3 w-3 mr-1 text-primary/70" />
-                                                        {item.name}
-                                                    </span>
-                                                    {item.additionalPrice > 0 && (
-                                                        <span className="text-primary">+{item.additionalPrice.toLocaleString()} VND</span>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
+                            {productOptions.map((productOption: ProductOption) => {
+                                // Get the option from the productOption
+                                const option = getOption(productOption)
+                                if (!option) return null
+
+                                return (
+                                    <AccordionItem key={productOption.id} value={productOption.id} className="border-b-0">
+                                        <AccordionTrigger className="py-2 text-sm font-medium hover:no-underline">
+                                            {option.name || "Option"}
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="space-y-1 pl-2">
+                                                {/* Add null check for optionItems */}
+                                                {getOptionItems(productOption).map((item) => (
+                                                    <div key={item.id} className="flex justify-between text-xs py-1">
+                                                        <span className="flex items-center">
+                                                            <Plus className="h-3 w-3 mr-1 text-primary/70" />
+                                                            {item.name}
+                                                        </span>
+                                                        {item.additionalPrice > 0 && (
+                                                            <span className="text-primary">+{item.additionalPrice.toLocaleString()} VND</span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                )
+                            })}
                         </Accordion>
                     </div>
                 )}
@@ -150,4 +209,3 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
         </Card>
     )
 }
-

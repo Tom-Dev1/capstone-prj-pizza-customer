@@ -1,15 +1,17 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { Calendar, Loader2, Clock, AlertCircle, Flame } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
-import { workshopService, type Workshop, WorkshopStatus } from "../services/workshop-service"
+import type { Workshop } from "@/types/workshop"
+import { WorkshopStatus } from "@/types/workshop"
+import { ToastContainer } from "react-toastify"
+import ScrollToTop from "@/components/scroll-to-top"
+import { Button } from "@/components/ui/button"
+import { workshopService } from "@/services"
 import WorkshopComponent from "./components/WorkshopComponent"
 import WorkshopRegistrationForm from "./components/WorkshopRegistrationForm"
-import { ToastContainer } from "react-toastify"
-import makepizza from '@/assets/makepizza.jpg'
-import ScrollToTop from "@/components/scroll-to-top"
 
 export default function PublicWorkshops() {
-    const { isAuthenticated } = useAuth()
     const [workshops, setWorkshops] = useState<Workshop[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -18,6 +20,8 @@ export default function PublicWorkshops() {
     const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false)
     const [upcomingWorkshops, setUpcomingWorkshops] = useState<Workshop[]>([])
     const [regularWorkshops, setRegularWorkshops] = useState<Workshop[]>([])
+    const [isLoadingWorkshop, setIsLoadingWorkshop] = useState(false)
+    const [workshopError, setWorkshopError] = useState<string | null>(null)
 
     // Fetch workshops on component mount
     useEffect(() => {
@@ -25,7 +29,7 @@ export default function PublicWorkshops() {
             try {
                 setIsLoading(true)
                 const response = await workshopService.getAllWorkshops()
-                console.log(response.result);
+                console.log(response.result)
 
                 if (response.success && response.result) {
                     // Store the total count
@@ -57,7 +61,7 @@ export default function PublicWorkshops() {
                                 const workshopDate = new Date(workshop.workshopDate)
                                 return workshopDate >= now && workshopDate <= oneWeekFromNow
                             })
-                            .slice(0, 4) // Chỉ lấy tối đa 3 workshop sắp diễn ra
+                            .slice(0, 4) // Chỉ lấy tối đa 4 workshop sắp diễn ra
 
                         // Lấy tất cả các workshop còn lại (không nằm trong danh sách upcoming)
                         const upcomingIds = new Set(upcoming.map((w) => w.id))
@@ -86,11 +90,29 @@ export default function PublicWorkshops() {
         fetchWorkshops()
     }, [])
 
-    // Handle workshop registration - Removed authentication check
-    const handleRegisterClick = (workshop: Workshop) => {
-        // Open registration form directly without auth check
-        setSelectedWorkshop(workshop)
-        setIsRegistrationFormOpen(true)
+    // Handle workshop registration with fresh data
+    const handleRegisterClick = async (workshop: Workshop) => {
+        try {
+            setIsLoadingWorkshop(true)
+            setWorkshopError(null)
+
+            // Fetch the latest workshop data by ID
+            const response = await workshopService.getWorkshopById(workshop.id)
+
+            if (response.success && response.result) {
+                // Use the fresh workshop data
+                setSelectedWorkshop(response.result)
+                setIsRegistrationFormOpen(true)
+            } else {
+                setWorkshopError(response.message || "Không thể tải thông tin khóa học. Vui lòng thử lại sau.")
+                console.error("Failed to fetch workshop details:", response.message)
+            }
+        } catch (err) {
+            console.error("Error fetching workshop details:", err)
+            setWorkshopError("Đã xảy ra lỗi khi tải thông tin khóa học. Vui lòng thử lại sau.")
+        } finally {
+            setIsLoadingWorkshop(false)
+        }
     }
 
     // Tính số ngày còn lại đến workshop
@@ -111,12 +133,12 @@ export default function PublicWorkshops() {
     return (
         <>
             <ToastContainer />
-            <div className="container mx-auto px-4 py-12 ">
+            <div className="container mx-auto px-4 py-12">
                 <div
                     className="fixed inset-0 -z-10 bg-cover bg-center"
                     style={{
-                        backgroundImage: `url(${makepizza})`,
-                        backgroundAttachment: "fixed",         // giữ ảnh cố định khi scroll
+                        backgroundImage: `url(/placeholder.svg?height=1080&width=1920&query=pizza making class background)`,
+                        backgroundAttachment: "fixed", // giữ ảnh cố định khi scroll
                         backgroundRepeat: "no-repeat",
                         backgroundSize: "cover",
                         backgroundPosition: "bottom",
@@ -135,7 +157,7 @@ export default function PublicWorkshops() {
                 {isLoading && (
                     <div className="flex justify-center items-center h-64">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <span className="ml-2">Đang tải khóa học...</span>
+                        <span className="ml-2 text-white">Đang tải khóa học...</span>
                     </div>
                 )}
 
@@ -162,9 +184,6 @@ export default function PublicWorkshops() {
                 {!isLoading && !error && workshops.length > 0 && (
                     <>
                         <div className="mb-6">
-                            {/* <p className="text-white">
-                                Hiển thị {workshops.length} khóa học đã lên lịch (Tổng số khóa học: {totalCount})
-                            </p> */}
                             <p className="text-sm text-white">
                                 {upcomingWorkshops.length} khóa học sắp diễn ra • {regularWorkshops.length} khóa học khác
                             </p>
@@ -201,7 +220,6 @@ export default function PublicWorkshops() {
                                                 <WorkshopComponent
                                                     workshop={workshop}
                                                     onRegister={handleRegisterClick}
-                                                    isAuthenticated={isAuthenticated}
                                                     isUpcoming={true}
                                                     daysRemaining={getDaysRemaining(workshop.workshopDate)}
                                                     highlightStyle="amber"
@@ -226,7 +244,6 @@ export default function PublicWorkshops() {
                                             key={workshop.id}
                                             workshop={workshop}
                                             onRegister={handleRegisterClick}
-                                            isAuthenticated={isAuthenticated}
                                             daysRemaining={getDaysRemaining(workshop.workshopDate)}
                                         />
                                     ))}
@@ -245,11 +262,39 @@ export default function PublicWorkshops() {
                     onClose={() => {
                         setIsRegistrationFormOpen(false)
                         setSelectedWorkshop(null)
+                        setWorkshopError(null)
                     }}
                 />
+            )}
+
+            {/* Workshop Loading Overlay */}
+            {isLoadingWorkshop && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg flex items-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary mr-3" />
+                        <span>Đang tải thông tin khóa học...</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Workshop Error Dialog */}
+            {workshopError && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md">
+                        <div className="flex items-start mb-4">
+                            <AlertCircle className="h-6 w-6 text-red-500 mr-2 flex-shrink-0" />
+                            <div>
+                                <h3 className="font-medium text-lg mb-1">Lỗi</h3>
+                                <p className="text-gray-600">{workshopError}</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end">
+                            <Button onClick={() => setWorkshopError(null)}>Đóng</Button>
+                        </div>
+                    </div>
+                </div>
             )}
             <ScrollToTop />
         </>
     )
 }
-

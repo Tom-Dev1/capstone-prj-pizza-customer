@@ -20,17 +20,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-    workshopService,
-    type Workshop,
-    type WorkshopRegistration,
-    type ProductSelection,
-
-
-} from "@/services/workshop-service"
-import { productService, type Product } from "@/services/product-service"
+import type { Workshop, WorkshopRegistration, ProductSelection } from "@/types/workshop"
+import type { Product, Option } from "@/types/product"
 import { authService } from "@/services/auth-service"
 import CustomerWorkshopList from "./CustomerWorkshopList"
+import { productService, workshopService } from "@/services"
 
 interface WorkshopRegistrationFormProps {
     workshop: Workshop
@@ -76,7 +70,29 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     const [, setRegistrationConfirmed] = useState(false)
     const [registrationData, setRegistrationData] = useState<WorkshopRegistration | null>(null)
 
+    // Add a new state to track selected childProducts
+    const [selectedChildProducts, setSelectedChildProducts] = useState<Map<string, string>>(new Map())
 
+
+    // Reset form when workshop changes
+    useEffect(() => {
+        if (isOpen && workshop) {
+            // Reset form state when a new workshop is selected
+            setCurrentStep(FormStep.PHONE_INPUT)
+            setPhoneNumber("")
+            setOtp("")
+            setOtpError(null)
+            setError(null)
+            setSuccess(null)
+            setSelectedProducts(new Map())
+            setSelectedChildProducts(new Map())
+            setGuestInfo({
+                name: "",
+                email: "",
+                phone: "",
+            })
+        }
+    }, [workshop, isOpen])
 
     // Fetch product details for all workshop food options
     useEffect(() => {
@@ -102,7 +118,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                 }
                 setSelectedProducts(new Map<string, Set<string>>())
                 setProductDetails(productMap)
-
             } catch (err) {
                 console.error("Lỗi khi tải thông tin sản phẩm:", err)
                 setError("Không thể tải thông tin sản phẩm")
@@ -115,6 +130,10 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             fetchProductDetails()
         }
     }, [workshop, isOpen, currentStep])
+
+    // Add this useEffect after the existing product fetching useEffect
+
+    // Add this useEffect after the existing product fetching useEffect
 
     // Handle phone number input
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,6 +233,11 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         if (updatedSelections.has(productId)) {
             // If already selected, remove it
             updatedSelections.delete(productId)
+
+            // Also remove any child product selection for this product
+            const updatedChildSelections = new Map(selectedChildProducts)
+            updatedChildSelections.delete(productId)
+            setSelectedChildProducts(updatedChildSelections)
         } else {
             // If not selected, add it with empty options
             updatedSelections.set(productId, new Set<string>())
@@ -237,9 +261,23 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         setSelectedProducts(updatedSelections)
     }
 
+    // Add this function after the toggleOptionItem function
+    // Handle child product selection (radio button style - only one can be selected per product)
+    const selectChildProduct = (productId: string, childProductId: string) => {
+        const updatedSelections = new Map(selectedChildProducts)
+        updatedSelections.set(productId, childProductId)
+        setSelectedChildProducts(updatedSelections)
+    }
+
     // Check if a product is selected
     const isProductSelected = (productId: string): boolean => {
         return selectedProducts.has(productId)
+    }
+
+    // Add this function after isOptionItemSelected
+    // Check if a child product is selected
+    const getSelectedChildProduct = (productId: string): string | undefined => {
+        return selectedChildProducts.get(productId)
     }
 
     // Check if an option item is selected
@@ -249,7 +287,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     }
 
     // Fetch customer workshop history
-
 
     // Xử lý khi người dùng xác nhận đăng ký tiếp
     const handleConfirmRegistration = async () => {
@@ -290,18 +327,67 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         setSuccess(null)
 
         try {
-            // Prepare products array for submission
+            // Add this validation inside the try block of handleSubmit, before creating the products array
+            const invalidSelections = Array.from(selectedProducts.keys()).filter((productId) => {
+                const product = productDetails.get(productId)
+                return (
+                    product &&
+                    product.productRole === "Master" &&
+                    product.childProducts &&
+                    product.childProducts.length > 0 &&
+                    !selectedChildProducts.has(productId)
+                )
+            })
+
+            if (invalidSelections.length > 0) {
+                const invalidProductNames = invalidSelections
+                    .map((id) => {
+                        const product = productDetails.get(id)
+                        return product ? product.name : id
+                    })
+                    .join(", ")
+
+                setError(`Vui lòng chọn loại sản phẩm cho: ${invalidProductNames}`)
+                setIsSubmitting(false)
+                return
+            }
+            // Modify the handleSubmit function to include childProducts in the submission
+            // Update inside the try block of handleSubmit, before creating the data object
             const products: ProductSelection[] = []
 
             selectedProducts.forEach((optionItems, productId) => {
-                // Chỉ thêm sản phẩm vào danh sách nếu nó được chọn và có ít nhất một option được chọn
-                if (optionItems.size > 0) {
+                const product = productDetails.get(productId)
+
+                if (!product) return
+
+                // For Master products, we need a selected child product
+                if (product.productRole === "Master") {
+                    const selectedChildProductId = selectedChildProducts.get(productId)
+
+                    if (selectedChildProductId) {
+                        products.push({
+                            productId,
+                            optionItemIds: Array.from(optionItems),
+                            childProductId: selectedChildProductId,
+                        })
+                    }
+                }
+                // For non-Master products, just add them with their options
+                else {
                     products.push({
                         productId,
                         optionItemIds: Array.from(optionItems),
+                        childProductId: "", // Empty string for non-Master products
                     })
                 }
             })
+
+            // Add validation before setting registrationData
+            if (products.length === 0) {
+                setError("Vui lòng chọn ít nhất một sản phẩm và tùy chọn kèm theo")
+                setIsSubmitting(false)
+                return
+            }
 
             // Cập nhật cấu trúc dữ liệu đăng ký theo yêu cầu mới
             const data: WorkshopRegistration = {
@@ -318,8 +404,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             setRegistrationData(data)
 
             console.log("Đang chuẩn bị dữ liệu đăng ký:", data)
-
-
 
             // Show workshop history popup với xác nhận đăng ký
             setShowWorkshopHistory(true)
@@ -338,11 +422,12 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
         // Xóa tất cả các optionItems khác thuộc cùng một option
         const product = productDetails.get(productId)
-        if (product) {
-            const option = product.options.find((opt) => opt.id === optionId)
-            if (option) {
+        if (product && product.productOptions) {
+            // Find the product option with the matching option id
+            const productOption = product.productOptions.find((po) => po.option && po.option.id === optionId)
+            if (productOption && productOption.option && productOption.option.optionItems) {
                 // Xóa tất cả các optionItems của option này
-                option.optionItems.forEach((item) => {
+                productOption.option.optionItems.forEach((item) => {
                     productOptions.delete(item.id)
                 })
             }
@@ -707,56 +792,102 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                                 />
                                                             </div>
 
-                                                            {isProductSelected(food.productId) && product.options && product.options.length > 0 && (
+                                                            {/* Update the product selection UI in the registration form */}
+                                                            {isProductSelected(food.productId) && product.productRole === "Master" && (
                                                                 <div className="mt-2 border-t pt-2">
-                                                                    <p className="text-xs font-medium mb-1 text-primary">Tùy chọn thêm:</p>
-                                                                    {product.options.map((option) => (
-                                                                        <div key={option.id} className="mb-2">
-                                                                            <p className="text-xs font-medium">{option.name}</p>
-                                                                            <div className="grid grid-cols-2 gap-1 mt-1">
-                                                                                {option.optionItems.map((item) => (
-                                                                                    <div
-                                                                                        key={item.id}
-                                                                                        className="flex items-center justify-between bg-gray-50 p-1 rounded"
-                                                                                    >
-                                                                                        <div className="flex items-center">
-                                                                                            {option.selectMany ? (
-                                                                                                // Checkbox cho phép chọn nhiều
-                                                                                                <Checkbox
-                                                                                                    id={`option-${item.id}`}
-                                                                                                    checked={isOptionItemSelected(food.productId, item.id)}
-                                                                                                    onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
-                                                                                                    className=""
-                                                                                                />
-                                                                                            ) : (
-                                                                                                // Radio button chỉ cho phép chọn một
-                                                                                                <input
-                                                                                                    type="radio"
-                                                                                                    id={`option-${item.id}`}
-                                                                                                    name={`option-${option.id}-${food.productId}`}
-                                                                                                    checked={isOptionItemSelected(food.productId, item.id)}
-                                                                                                    onChange={() =>
-                                                                                                        handleRadioOptionChange(food.productId, option.id, item.id)
-                                                                                                    }
-                                                                                                    className="h-3 w-3 text-primary"
-                                                                                                />
-                                                                                            )}
-                                                                                            <Label htmlFor={`option-${item.id}`} className="ml-1 text-xs">
-                                                                                                {item.name}
-                                                                                            </Label>
-                                                                                        </div>
-                                                                                        {item.additionalPrice > 0 && (
-                                                                                            <span className="text-xs text-primary">
-                                                                                                +{item.additionalPrice.toLocaleString()}
-                                                                                            </span>
-                                                                                        )}
+                                                                    <p className="text-xs font-medium mb-1 text-red-500">* Bắt buộc chọn một loại:</p>
+                                                                    <div className="grid grid-cols-1 gap-1 mt-1">
+                                                                        {product.childProducts && product.childProducts.length > 0 ? (
+                                                                            product.childProducts.map((childProduct) => (
+                                                                                <div
+                                                                                    key={childProduct.id}
+                                                                                    className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                                                                                >
+                                                                                    <div className="flex items-center">
+                                                                                        <input
+                                                                                            type="radio"
+                                                                                            id={`child-${childProduct.id}-${food.productId}`}
+                                                                                            name={`child-product-${food.productId}`}
+                                                                                            checked={getSelectedChildProduct(food.productId) === childProduct.id}
+                                                                                            onChange={() => selectChildProduct(food.productId, childProduct.id)}
+                                                                                            className="h-3 w-3 text-primary"
+                                                                                            required
+                                                                                        />
+                                                                                        <Label
+                                                                                            htmlFor={`child-${childProduct.id}-${food.productId}`}
+                                                                                            className="ml-2 text-xs"
+                                                                                        >
+                                                                                            {childProduct.name}
+                                                                                        </Label>
                                                                                     </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
+                                                                                    <span className="text-xs text-primary">
+                                                                                        {childProduct.price.toLocaleString()} VND
+                                                                                    </span>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : (
+                                                                            <div className="text-xs text-gray-500 italic p-2">Không có loại sản phẩm nào</div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             )}
+
+                                                            {isProductSelected(food.productId) &&
+                                                                product.productOptions &&
+                                                                product.productOptions.length > 0 && (
+                                                                    <div className="mt-2 border-t pt-2">
+                                                                        <p className="text-xs font-medium mb-1 text-primary">Tùy chọn thêm:</p>
+                                                                        {product.productOptions.map((productOption) => {
+                                                                            // Get the option from the productOption
+                                                                            const option = productOption.option || ({} as Option)
+                                                                            return (
+                                                                                <div key={productOption.id} className="mb-2">
+                                                                                    <p className="text-xs font-medium">{option.name || "Option"}</p>
+                                                                                    <div className="grid grid-cols-2 gap-1 mt-1">
+                                                                                        {(option.optionItems || []).map((item) => (
+                                                                                            <div
+                                                                                                key={item.id}
+                                                                                                className="flex items-center justify-between bg-gray-50 p-1 rounded"
+                                                                                            >
+                                                                                                <div className="flex items-center">
+                                                                                                    {option.selectMany ? (
+                                                                                                        // Checkbox cho phép chọn nhiều
+                                                                                                        <Checkbox
+                                                                                                            id={`option-${item.id}`}
+                                                                                                            checked={isOptionItemSelected(food.productId, item.id)}
+                                                                                                            onCheckedChange={() => toggleOptionItem(food.productId, item.id)}
+                                                                                                            className=""
+                                                                                                        />
+                                                                                                    ) : (
+                                                                                                        // Radio button chỉ cho phép chọn một
+                                                                                                        <input
+                                                                                                            type="radio"
+                                                                                                            id={`option-${item.id}`}
+                                                                                                            name={`option-${option.id}-${food.productId}`}
+                                                                                                            checked={isOptionItemSelected(food.productId, item.id)}
+                                                                                                            onChange={() =>
+                                                                                                                handleRadioOptionChange(food.productId, option.id, item.id)
+                                                                                                            }
+                                                                                                            className="h-3 w-3 text-primary"
+                                                                                                        />
+                                                                                                    )}
+                                                                                                    <Label htmlFor={`option-${item.id}`} className="ml-1 text-xs">
+                                                                                                        {item.name}
+                                                                                                    </Label>
+                                                                                                </div>
+                                                                                                {item.additionalPrice > 0 && (
+                                                                                                    <span className="text-xs text-primary">
+                                                                                                        +{item.additionalPrice.toLocaleString()}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                         </div>
                                                     )
                                                 })}

@@ -6,7 +6,7 @@ import { Calendar, MapPin, Users, Phone, Clock, Wallet, Pizza, AlertCircle } fro
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Workshop } from "@/services/workshop-service"
+import type { Workshop } from "@/types/workshop"
 import ProductDetails from "./ProductDetail"
 import { getWorkshopStatusVi } from "@/constants/workshop"
 
@@ -108,7 +108,6 @@ export default function WorkshopComponent({
     return (
         <Card className={getCardClass()}>
             <CardHeader className={`pb-2 ${getHeaderClass()}`}>
-
                 <div className="flex flex-col items-start p-7">
                     <CardTitle className="text-xl font-bold pr-24">{workshop.name}</CardTitle>
                     <div className="mt-2">{workshop.header}</div>
@@ -126,8 +125,6 @@ export default function WorkshopComponent({
                         {getWorkshopStatusVi(workshop.workshopStatus)}
                     </Badge>
                 </div>
-
-
             </CardHeader>
             <CardContent className="pb-3 mx-4">
                 <div className="mt-3">
@@ -206,32 +203,35 @@ export default function WorkshopComponent({
                                 </p>
                             </div>
                         </div>
-
                     </div>
-
-
 
                     {isExpanded && (
                         <div className="mt-3 px-3">
-
                             <div>
                                 <p className="font-medium mb-1">Mô Tả</p>
                                 <p className="text-sm text-gray-600">{workshop.description}</p>
                             </div>
 
-                            {workshop.workshopFoodDetails.length > 0 && (
+                            {workshop.workshopFoodDetails && workshop.workshopFoodDetails.length > 0 ? (
                                 <div className="mt-3">
                                     <p className="font-medium mb-1 flex items-center">
-                                        <Pizza className="h-4 w-4 mr-1" /> Các Món Ăn Có Sẵn
+                                        <Pizza className="h-4 w-4 mr-1" /> Các Món Ăn Có Sẵn ({workshop.workshopFoodDetails.length})
                                     </p>
                                     <ul className="text-sm text-gray-600 space-y-1 mt-2">
                                         {workshop.workshopFoodDetails.map((food) => (
                                             <li key={food.id}>
-
+                                                <div className="mb-1 text-xs text-primary font-medium">{food.name}</div>
                                                 <ProductDetails productId={food.productId} />
                                             </li>
                                         ))}
                                     </ul>
+                                </div>
+                            ) : (
+                                <div className="mt-3">
+                                    <p className="font-medium mb-1 flex items-center">
+                                        <Pizza className="h-4 w-4 mr-1" /> Các Món Ăn Có Sẵn
+                                    </p>
+                                    <p className="text-sm text-gray-500 italic">Không có thông tin về món ăn</p>
                                 </div>
                             )}
                         </div>
@@ -250,4 +250,3 @@ export default function WorkshopComponent({
         </Card>
     )
 }
-
