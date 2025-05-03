@@ -25,6 +25,7 @@ import type { Product, Option } from "@/types/product"
 import { authService } from "@/services/auth-service"
 import CustomerWorkshopList from "./CustomerWorkshopList"
 import { productService, workshopService } from "@/services"
+import { toast } from "react-toastify"
 
 interface WorkshopRegistrationFormProps {
     workshop: Workshop
@@ -50,6 +51,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     const [isSendingOtp, setIsSendingOtp] = useState(false)
     const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
     const [otpError, setOtpError] = useState<string | null>(null)
+    const [productError, setProductError] = useState<string | null>(null)
 
     // Main form states
     const [isLoading, setIsLoading] = useState(false)
@@ -229,7 +231,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     // Toggle product selection
     const toggleProductSelection = (productId: string) => {
         const updatedSelections = new Map(selectedProducts)
-
+        setProductError(null)
         if (updatedSelections.has(productId)) {
             // If already selected, remove it
             updatedSelections.delete(productId)
@@ -296,13 +298,14 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         setError(null)
 
         try {
+            const nameWorkshop = workshop.name
             // Gửi dữ liệu đăng ký
             const response = await workshopService.workShopRegistration(registrationData)
 
             if (response.success) {
-                setSuccess("Đăng ký khóa học thành công!")
+                setSuccess("Đăng ký Workshop thành công!")
                 setRegistrationConfirmed(true)
-
+                toast.success(`Đăng ký workshop ${nameWorkshop} thành công!`)
                 // Đóng popup sau một khoảng thời gian
                 setTimeout(() => {
                     setShowWorkshopHistory(false)
@@ -325,7 +328,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
         setIsSubmitting(true)
         setError(null)
         setSuccess(null)
-
+        setProductError(null)
         try {
             // Add this validation inside the try block of handleSubmit, before creating the products array
             const invalidSelections = Array.from(selectedProducts.keys()).filter((productId) => {
@@ -384,7 +387,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
             // Add validation before setting registrationData
             if (products.length === 0) {
-                setError("Vui lòng chọn ít nhất một sản phẩm và tùy chọn kèm theo")
+                setProductError("Vui lòng chọn ít nhất một sản phẩm và tùy chọn kèm theo")
                 setIsSubmitting(false)
                 return
             }
@@ -465,6 +468,12 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     }
 
     if (!isOpen) return null
+
+
+    console.log(workshop.maxParticipantPerRegister);
+
+
+
 
     // Render different content based on current step
     const renderStepContent = () => {
@@ -616,11 +625,6 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
                                 <span>Đang tải tùy chọn sản phẩm...</span>
                             </div>
-                        ) : error ? (
-                            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md flex items-start">
-                                <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                                <p>{error}</p>
-                            </div>
                         ) : (
                             <>
                                 {success && (
@@ -704,7 +708,13 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                         min={1}
                                                         max={workshop.maxParticipantPerRegister}
                                                         value={totalParticipants}
-                                                        onChange={(e) => setTotalParticipants(Number.parseInt(e.target.value) || 1)}
+                                                        onChange={(e) => {
+                                                            let value = parseInt(e.target.value);
+                                                            if (isNaN(value) || value < 1) value = 1;
+                                                            if (value > workshop.maxParticipantPerRegister)
+                                                                value = workshop.maxParticipantPerRegister;
+                                                            setTotalParticipants(value);
+                                                        }}
                                                     />
                                                     <p className="text-xs text-gray-500 mt-1">
                                                         Tối đa {workshop.maxParticipantPerRegister} người mỗi đăng ký
@@ -772,8 +782,13 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                             <p className="text-xs text-gray-600 mt-1 mb-3">
                                                 Chọn các sản phẩm bạn muốn làm trong khóa học và tùy chọn đi kèm
                                             </p>
-
-                                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                                            {productError && (
+                                                <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded-md flex items-start mb-3">
+                                                    <AlertCircle className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
+                                                    <p className="text-xs">{productError}</p>
+                                                </div>
+                                            )}
+                                            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
                                                 {workshop.workshopFoodDetails.map((food) => {
                                                     const product = productDetails.get(food.productId)
                                                     if (!product) return null
@@ -926,7 +941,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                 <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
                         <h3 className="text-lg font-semibold">
-                            {currentStep === FormStep.REGISTRATION_FORM ? "Đăng Ký Khóa Học" : "Xác Thực Số Điện Thoại"}
+                            {currentStep === FormStep.REGISTRATION_FORM ? "Đăng ký Workshop" : "Xác Thực Số Điện Thoại"}
                         </h3>
                         <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
                             <X className="h-5 w-5" />
@@ -939,6 +954,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
             {/* Popup hiển thị lịch sử đăng ký workshop */}
             <CustomerWorkshopList
+                error={error}
                 isOpen={showWorkshopHistory}
                 onClose={() => {
                     setShowWorkshopHistory(false)

@@ -25,7 +25,7 @@ export default function CustomerDashboard() {
             color: "bg-red-50 text-red-600",
         },
         {
-            title: "Đăng Ký Khóa Học",
+            title: "Đăng ký Workshop",
             description: "Quản lý các khóa học pizza bạn đã đăng ký",
             icon: Calendar,
             link: "/customer/workshops",

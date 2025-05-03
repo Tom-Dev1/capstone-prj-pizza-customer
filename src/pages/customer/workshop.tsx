@@ -135,7 +135,7 @@ export default function CustomerWorkshops() {
                 <div className="mt-4 md:mt-0">
                     <Button onClick={() => handleClick()} variant="outline" className="flex items-center">
                         <Calendar className="mr-2 h-4 w-4" />
-                        Đăng ký khóa học mới
+                        Đăng ký Workshop mới
                     </Button>
                 </div>
             </div>
@@ -156,7 +156,7 @@ export default function CustomerWorkshops() {
             ) : workshops.length === 0 ? (
                 <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
                     <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium text-gray-900 mb-2">Bạn chưa đăng ký khóa học nào</h3>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">Bạn chưa Đăng ký Workshop nào</h3>
                     <p className="text-gray-600 max-w-md mx-auto mb-6">
                         Khám phá các khóa học làm bánh pizza của chúng tôi và đăng ký ngay để học cách làm những chiếc bánh pizza
                         thơm ngon.
