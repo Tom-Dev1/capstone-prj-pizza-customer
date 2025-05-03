@@ -39,8 +39,10 @@ export default function BookingForm() {
     // Thêm state mới để lưu trữ ngày, giờ và phút riêng biệt
     const [dateTimeInputs, setDateTimeInputs] = useState(() => {
         const now = new Date()
+        // Sử dụng định dạng ngày địa phương thay vì UTC
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
         return {
-            date: now.toISOString().split("T")[0],
+            date: today,
             time: "", // Không đặt giá trị mặc định cho time
         }
     })
@@ -63,31 +65,47 @@ export default function BookingForm() {
         if (formData.bookingTime) {
             try {
                 const dateTime = new Date(formData.bookingTime)
+                const now = new Date()
+                now.setHours(0, 0, 0, 0) // Reset time để so sánh chỉ ngày
 
-                // Kiểm tra xem ngày giờ có hợp lệ không
+                // Kiểm tra xem ngày giờ có hợp lệ không và không phải là quá khứ
                 if (!isNaN(dateTime.getTime())) {
+                    // Sử dụng định dạng ngày địa phương
+                    const formatLocalDate = (date: Date) => {
+                        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+                    }
+
+                    // Nếu ngày đã chọn là quá khứ, sử dụng ngày hiện tại
+                    const selectedDate = dateTime < now ? formatLocalDate(now) : formatLocalDate(dateTime)
+
                     setDateTimeInputs({
-                        date: dateTime.toISOString().split("T")[0],
+                        date: selectedDate,
                         time: "", // Không đặt giá trị mặc định cho time
                     })
                 }
             } catch (error) {
                 console.error("Error parsing booking time:", error)
+                // Nếu có lỗi, sử dụng ngày hiện tại
+                const now = new Date()
+                const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+                setDateTimeInputs({
+                    date: today,
+                    time: "",
+                })
             }
         }
-    }, [])
+    }, [formData.bookingTime])
 
-    // Thay đổi hàm timeOptions để hiển thị thời gian tiếp theo chính xác hơn
+    // Thay đổi hàm timeOptions để hiển thị thời gian thực tế hiện tại
     const timeOptions = useMemo(() => {
         const times = []
         const now = new Date()
-        const today = now.toISOString().split("T")[0]
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
         const isToday = dateTimeInputs.date === today
 
-        // Tính toán thời gian tiếp theo (làm tròn lên đến 15 phút tiếp theo)
+        // Lấy giờ và phút hiện tại (không làm tròn)
         const currentHour = now.getHours()
         const currentMinute = now.getMinutes()
-        const minuteRoundUp = Math.ceil(currentMinute / 15) * 15
 
         for (let hour = 0; hour <= 23; hour++) {
             for (let minute = 0; minute < 60; minute += 15) {
@@ -96,8 +114,8 @@ export default function BookingForm() {
                     // Nếu giờ nhỏ hơn giờ hiện tại, bỏ qua
                     if (hour < currentHour) continue
 
-                    // Nếu cùng giờ nhưng phút nhỏ hơn phút hiện tại đã làm tròn lên, bỏ qua
-                    if (hour === currentHour && minute < minuteRoundUp) continue
+                    // Nếu cùng giờ nhưng phút nhỏ hơn phút hiện tại, bỏ qua
+                    if (hour === currentHour && minute < currentMinute) continue
                 }
 
                 const formattedHour = hour.toString().padStart(2, "0")
@@ -397,6 +415,7 @@ export default function BookingForm() {
 
     const resetForm = () => {
         const now = new Date()
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
         setFormData({
             customerName: "",
             phoneNumber: "",
@@ -405,7 +424,7 @@ export default function BookingForm() {
             numberOfPeople: 2,
         })
         setDateTimeInputs({
-            date: now.toISOString().split("T")[0],
+            date: today,
             time: "", // Không đặt giá trị mặc định cho time
         })
         setIsSubmitted(false)
@@ -637,29 +656,38 @@ export default function BookingForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="bookingDate" className="text-gray-700">
-                        Thời gian đặt bàn <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="flex space-x-2">
-                        <div className="">
-
-                            <Input
-                                id="date"
-                                name="date"
-                                type="date"
-                                value={dateTimeInputs.date}
-                                onChange={handleDateChange}
-                                min={new Date().toISOString().split("T")[0]}
-                                className={cn(" w-[220px]", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}
-                            />
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="date" className="text-gray-700">
+                                Ngày <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <Calendar className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <Input
+                                    id="date"
+                                    name="date"
+                                    type="date"
+                                    value={dateTimeInputs.date}
+                                    onChange={handleDateChange}
+                                    min={new Date().toISOString().split("T")[0]}
+                                    className={cn("pl-10 w-full", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}
+                                />
+                            </div>
                         </div>
-
-                        <div className="w-36 font-sans">
+                        <div className="space-y-1">
+                            <Label htmlFor="time" className="text-gray-700">
+                                Giờ <span className="text-red-500">*</span>
+                            </Label>
                             <Select value={dateTimeInputs.time} onValueChange={handleTimeChange}>
-                                <SelectTrigger className={cn("h-9", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}>
+                                <SelectTrigger
+                                    id="time"
+                                    className={cn("w-full", errors.bookingTime ? "border-red-500 focus-visible:ring-red-500" : "")}
+                                >
                                     <SelectValue placeholder="Chọn thời gian" />
                                 </SelectTrigger>
-                                <SelectContent className="h-[280px] flex overflow-y-auto font-sans">
+                                <SelectContent className="h-[300px] overflow-y-auto">
                                     {timeOptions.length > 0 ? (
                                         timeOptions.map((time) => (
                                             <SelectItem key={`time-${time}`} value={time}>

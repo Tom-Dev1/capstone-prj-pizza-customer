@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { workshopService } from "@/services"
 import WorkshopComponent from "./components/WorkshopComponent"
 import WorkshopRegistrationForm from "./components/WorkshopRegistrationForm"
-
+import makepizza from '../assets/makepizza.jpg'
 export default function PublicWorkshops() {
     const [workshops, setWorkshops] = useState<Workshop[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -137,7 +137,7 @@ export default function PublicWorkshops() {
                 <div
                     className="fixed inset-0 -z-10 bg-cover bg-center"
                     style={{
-                        backgroundImage: `url(/placeholder.svg?height=1080&width=1920&query=pizza making class background)`,
+                        backgroundImage: `url(${makepizza})`,
                         backgroundAttachment: "fixed", // giữ ảnh cố định khi scroll
                         backgroundRepeat: "no-repeat",
                         backgroundSize: "cover",

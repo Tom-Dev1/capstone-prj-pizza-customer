@@ -85,12 +85,7 @@ export default function Header() {
             { name: "Liên hệ", href: "/#contact" },
         ]
 
-        // Add auth-specific items
-        if (isAuthenticated) {
-            items.push({ name: "Bảng điều khiển", href: "/customer/dashboard" })
-        } else {
-            items.push({ name: "Đăng nhập", href: "/auth/login" })
-        }
+
 
         return items
     }
