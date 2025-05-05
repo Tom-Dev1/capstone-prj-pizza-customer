@@ -30,10 +30,10 @@ export type WorkshopFoodDetail = {
     //   product: null | any // Replace with proper type if available
 }
 export enum WorkshopStatus {
-    Scheduled = "Scheduled",
+    Opening = "Opening",
     OpeningToRegister = "OpeningToRegister",
+    Scheduled = "Scheduled",
     ClosedRegister = "ClosedRegister",
-    Opening = "Openning",
     Closed = "Closed",
     Cancelled = "Cancelled",
 }

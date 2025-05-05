@@ -74,7 +74,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
     // Add a new state to track selected childProducts
     const [selectedChildProducts, setSelectedChildProducts] = useState<Map<string, string>>(new Map())
-
+    const [totalSelectedProducts, setTotalSelectedProducts] = useState(0)
 
     // Reset form when workshop changes
     useEffect(() => {
@@ -88,6 +88,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
             setSuccess(null)
             setSelectedProducts(new Map())
             setSelectedChildProducts(new Map())
+            setTotalSelectedProducts(0)
             setGuestInfo({
                 name: "",
                 email: "",
@@ -232,17 +233,26 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     const toggleProductSelection = (productId: string) => {
         const updatedSelections = new Map(selectedProducts)
         setProductError(null)
-        if (updatedSelections.has(productId)) {
+
+        // Check if trying to add a new product
+        if (!updatedSelections.has(productId)) {
+            // Check if adding this product would exceed the limit
+            if (totalSelectedProducts >= workshop.maxPizzaPerRegister) {
+                setProductError(`Bạn chỉ có thể chọn tối đa ${workshop.maxPizzaPerRegister} sản phẩm cho mỗi đăng ký`)
+                return
+            }
+            // If not selected, add it with empty options
+            updatedSelections.set(productId, new Set<string>())
+            setTotalSelectedProducts(prev => prev + 1)
+        } else {
             // If already selected, remove it
             updatedSelections.delete(productId)
+            setTotalSelectedProducts(prev => prev - 1)
 
             // Also remove any child product selection for this product
             const updatedChildSelections = new Map(selectedChildProducts)
             updatedChildSelections.delete(productId)
             setSelectedChildProducts(updatedChildSelections)
-        } else {
-            // If not selected, add it with empty options
-            updatedSelections.set(productId, new Set<string>())
         }
 
         setSelectedProducts(updatedSelections)
@@ -754,20 +764,13 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                             <div className="mt-3 space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Phí tham gia:</span>
-                                                    <span>{workshop.totalFee.toLocaleString()} VND / người</span>
+                                                    <span>{workshop.totalFee.toLocaleString()} VND</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Số lượng người:</span>
                                                     <span>{totalParticipants} người</span>
                                                 </div>
-                                                <div className="border-t pt-2 mt-2">
-                                                    <div className="flex justify-between font-bold">
-                                                        <span>Tổng cộng:</span>
-                                                        <span className="text-primary">
-                                                            {(totalParticipants * workshop.totalFee).toLocaleString()} VND
-                                                        </span>
-                                                    </div>
-                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -782,6 +785,11 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                             <p className="text-xs text-gray-600 mt-1 mb-3">
                                                 Chọn các sản phẩm bạn muốn làm trong khóa học và tùy chọn đi kèm
                                             </p>
+                                            <div className="bg-blue-50 border border-blue-100 p-2 rounded-md mb-3">
+                                                <p className="text-xs text-blue-700">
+                                                    Bạn đã chọn {totalSelectedProducts}/{workshop.maxPizzaPerRegister} sản phẩm
+                                                </p>
+                                            </div>
                                             {productError && (
                                                 <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded-md flex items-start mb-3">
                                                     <AlertCircle className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />

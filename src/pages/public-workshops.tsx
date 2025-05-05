@@ -40,20 +40,33 @@ export default function PublicWorkshops() {
                         // Only show workshops with "Scheduled" status or "Opening" status
                         const scheduledWorkshops = response.result.items.filter(
                             (workshop) =>
-                                workshop.workshopStatus === WorkshopStatus.Scheduled ||
-                                workshop.workshopStatus === WorkshopStatus.OpeningToRegister ||
-                                workshop.workshopStatus === WorkshopStatus.ClosedRegister,
+                                workshop.workshopStatus !== WorkshopStatus.Cancelled
                         )
+
+                        // Define status priority order
+                        const statusPriority: Record<WorkshopStatus, number> = {
+                            [WorkshopStatus.Opening]: 1,
+                            [WorkshopStatus.OpeningToRegister]: 2,
+                            [WorkshopStatus.Scheduled]: 3,
+                            [WorkshopStatus.ClosedRegister]: 4,
+                            [WorkshopStatus.Closed]: 5,
+                            [WorkshopStatus.Cancelled]: 6 // This won't be used but needed for type completeness
+                        }
+
+                        // Sort workshops by status priority first, then by date
+                        const sortedWorkshops = scheduledWorkshops.sort((a: Workshop, b: Workshop) => {
+                            // First compare by status priority
+                            const statusDiff = statusPriority[a.workshopStatus] - statusPriority[b.workshopStatus]
+                            if (statusDiff !== 0) return statusDiff
+
+                            // If same status, sort by date
+                            return new Date(a.workshopDate).getTime() - new Date(b.workshopDate).getTime()
+                        })
 
                         // Xác định các workshop sắp diễn ra (trong vòng 7 ngày tới)
                         const now = new Date()
                         const oneWeekFromNow = new Date()
                         oneWeekFromNow.setDate(now.getDate() + 7)
-
-                        // Sắp xếp workshop theo thời gian diễn ra từ gần nhất đến xa nhất
-                        const sortedWorkshops = scheduledWorkshops.sort((a, b) => {
-                            return new Date(a.workshopDate).getTime() - new Date(b.workshopDate).getTime()
-                        })
 
                         // Phân loại workshops thành "sắp diễn ra" và "thông thường"
                         const upcoming = sortedWorkshops

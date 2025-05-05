@@ -242,10 +242,14 @@ export default function WorkshopComponent({
                 <Button variant="outline" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
                     {isExpanded ? "Thu Gọn" : "Xem Thêm"}
                 </Button>
+                {workshop.workshopStatus === "OpeningToRegister" && (
 
-                <Button className={getButtonClass()} onClick={handleRegisterClick}>
-                    Đăng Ký Ngay
-                </Button>
+
+
+                    <Button className={getButtonClass()} onClick={handleRegisterClick}>
+                        Đăng Ký Ngay
+                    </Button>
+                )}
             </CardFooter>
         </Card>
     )

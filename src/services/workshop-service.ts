@@ -37,7 +37,7 @@ export enum WorkshopStatus {
     Scheduled = 'Scheduled',
     OpeningToRegister = 'OpeningToRegister',
     ClosedRegister = 'ClosedRegister',
-    Opening = 'Openning',
+    Opening = 'Opening',
     Closed = 'Closed',
     Cancelled = 'Cancelled'
 }
