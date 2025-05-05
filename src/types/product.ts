@@ -51,9 +51,10 @@ export default interface OptionItem {
     id: string,
     name: string,
     additionalPrice: number
+    optionItemStatus: OPTIONITEM_STATUS
 }
 
-
+export type OPTIONITEM_STATUS = "Available" | "OutOfIngredient" | "Locked"
 
 export interface ProductsResponse {
     items: Product[]

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 
 import type { Product, ProductOption } from "@/types/product"
@@ -114,12 +113,12 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                     {showOptions ? (
                                         <>
                                             <ChevronUp className="h-3 w-3 mr-1" />
-                                            Hide options
+                                            Ẩn lựa chọn
                                         </>
                                     ) : (
                                         <>
                                             <ChevronDown className="h-3 w-3 mr-1" />
-                                            Show options ({productOptions.length})
+                                            Hiển thị lựa chọn ({productOptions.length})
                                         </>
                                     )}
                                 </button>
@@ -134,12 +133,12 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                     {showChildProducts ? (
                                         <>
                                             <ChevronUp className="h-3 w-3 mr-1" />
-                                            Hide variants
+                                            Ẩn sản phẩm
                                         </>
                                     ) : (
                                         <>
                                             <ChevronDown className="h-3 w-3 mr-1" />
-                                            Show variants ({product.childProducts.length})
+                                            Hiển thị sản phẩm ({product.childProducts.length})
                                         </>
                                     )}
                                 </button>
@@ -159,12 +158,14 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                 Các loại sản phẩm
                             </h5>
                             <div className="space-y-1 pl-2">
-                                {product.childProducts.map((childProduct) => (
-                                    <div key={childProduct.id} className="flex justify-between text-xs py-1 bg-white p-2 rounded-md">
-                                        <span>{childProduct.name}</span>
-                                        <span className="font-medium">{childProduct.price.toLocaleString()} VND</span>
-                                    </div>
-                                ))}
+                                {product.childProducts
+                                    .sort((a, b) => a.price - b.price)
+                                    .map((childProduct) => (
+                                        <div key={childProduct.id} className="flex justify-between text-xs py-1 bg-white p-2 rounded-md">
+                                            <span>{childProduct.name}</span>
+                                            <span className="font-medium">{childProduct.price.toLocaleString()} VND</span>
+                                        </div>
+                                    ))}
                             </div>
                         </div>
                     )}
@@ -186,17 +187,34 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                         <AccordionContent>
                                             <div className="space-y-1 pl-2">
                                                 {/* Add null check for optionItems */}
-                                                {getOptionItems(productOption).map((item) => (
-                                                    <div key={item.id} className="flex justify-between text-xs py-1">
-                                                        <span className="flex items-center">
-                                                            <Plus className="h-3 w-3 mr-1 text-primary/70" />
-                                                            {item.name}
-                                                        </span>
-                                                        {item.additionalPrice > 0 && (
-                                                            <span className="text-primary">+{item.additionalPrice.toLocaleString()} VND</span>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                {getOptionItems(productOption)
+                                                    .filter(item => item.optionItemStatus !== "Locked")
+                                                    .sort((a, b) => {
+                                                        // First sort by status (Available first)
+                                                        if (a.optionItemStatus === "Available" && b.optionItemStatus !== "Available") return -1;
+                                                        if (a.optionItemStatus !== "Available" && b.optionItemStatus === "Available") return 1;
+
+                                                        // Then sort by price within each status group
+                                                        return a.additionalPrice - b.additionalPrice;
+                                                    })
+                                                    .map((item) => (
+                                                        <div
+                                                            key={item.id}
+                                                            className={`flex justify-between text-xs py-1
+                                                             ${item.optionItemStatus === "OutOfIngredient" ? "text-gray-400" : ""}`}
+                                                        >
+                                                            <span className="flex items-center">
+                                                                <Plus className="h-3 w-3 mr-1 text-primary/70" />
+                                                                <div className={` ${item.optionItemStatus === "OutOfIngredient" ? "line-through" : ""}`}>{item.name}</div>
+                                                                {item.optionItemStatus === "OutOfIngredient" && (
+                                                                    <span className="ml-2 text-red-500 text-[10px]">(Hết Nguyên Liệu)</span>
+                                                                )}
+                                                            </span>
+                                                            {item.additionalPrice > 0 && (
+                                                                <span className={`text-primary  ${item.optionItemStatus === "OutOfIngredient" ? "line-through text-gray-400" : ""}`}>+{item.additionalPrice.toLocaleString()} VND</span>
+                                                            )}
+                                                        </div>
+                                                    ))}
                                             </div>
                                         </AccordionContent>
                                     </AccordionItem>
