@@ -87,7 +87,7 @@ export default function CustomerWorkshopList({
                                     <div>
                                         <h4 className="font-medium text-blue-800">Xác nhận Đăng ký Workshop</h4>
                                         <p className="text-sm text-blue-700 mt-1">
-                                            Bạn đã xem lại các khóa học đã đăng ký trước đó. Bạn có muốn tiếp tục Đăng ký Workshop{" "}
+                                            Bạn đã xem lại các workshop đã đăng ký trước đó. Bạn có muốn tiếp tục Đăng ký Workshop{" "}
                                             <strong>{currentWorkshop.name}</strong> vào ngày{" "}
                                             <strong>{formatDate(currentWorkshop.workshopDate)}</strong> không?
                                         </p>

@@ -133,8 +133,8 @@ export default function WorkshopComponent({
                             <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                             <span>
                                 {daysRemaining <= 7
-                                    ? `Khóa học sẽ diễn ra trong ${daysRemaining} ngày nữa!`
-                                    : "Khóa học sẽ diễn ra trong vòng 2 tuần tới!"}
+                                    ? `Workshop sẽ diễn ra trong ${daysRemaining} ngày nữa!`
+                                    : "Workshop sẽ diễn ra trong vòng 2 tuần tới!"}
                             </span>
                         </div>
                     )}
@@ -143,8 +143,8 @@ export default function WorkshopComponent({
                             <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
                             <span>
                                 {daysRemaining === 0
-                                    ? "Khóa học diễn ra hôm nay!"
-                                    : `Khóa học sẽ diễn ra trong ${daysRemaining} ngày nữa!`}
+                                    ? "Workshop diễn ra hôm nay!"
+                                    : `Workshop sẽ diễn ra trong ${daysRemaining} ngày nữa!`}
                             </span>
                         </div>
                     )}

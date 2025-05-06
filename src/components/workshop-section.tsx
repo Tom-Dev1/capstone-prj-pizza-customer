@@ -257,7 +257,7 @@ export default function WorkshopSection() {
         {
             title: "Chứng Chỉ Pizza Chuyên Nghiệp",
             description:
-                "Hoàn thành khóa học nâng cao của chúng tôi và nhận chứng chỉ pizza chuyên nghiệp được công nhận trong ngành ẩm thực.",
+                "Hoàn thành workshop nâng cao của chúng tôi và nhận chứng chỉ pizza chuyên nghiệp được công nhận trong ngành ẩm thực.",
             icon: <GraduationCap className="w-16 h-16 text-primary mb-6" />,
             benefits: [
                 {
@@ -270,7 +270,7 @@ export default function WorkshopSection() {
                 },
                 {
                     icon: <BookOpen className="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" />,
-                    text: "Tài liệu học tập chuyên sâu và hỗ trợ sau khóa học",
+                    text: "Tài liệu học tập chuyên sâu và hỗ trợ sau workshop",
                 },
             ],
             background:

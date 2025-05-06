@@ -117,12 +117,12 @@ export default function PublicWorkshops() {
                 setSelectedWorkshop(response.result)
                 setIsRegistrationFormOpen(true)
             } else {
-                setWorkshopError(response.message || "Không thể tải thông tin khóa học. Vui lòng thử lại sau.")
+                setWorkshopError(response.message || "Không thể tải thông tin workshop. Vui lòng thử lại sau.")
                 console.error("Failed to fetch workshop details:", response.message)
             }
         } catch (err) {
             console.error("Error fetching workshop details:", err)
-            setWorkshopError("Đã xảy ra lỗi khi tải thông tin khóa học. Vui lòng thử lại sau.")
+            setWorkshopError("Đã xảy ra lỗi khi tải thông tin workshop. Vui lòng thử lại sau.")
         } finally {
             setIsLoadingWorkshop(false)
         }
@@ -159,9 +159,9 @@ export default function PublicWorkshops() {
                     }}
                 />
                 <div className="text-center mb-12 text-white">
-                    <h1 className="text-4xl font-bold mb-4">Các Khóa Học Làm Bánh Pizza Sắp Tới</h1>
+                    <h1 className="text-4xl font-bold mb-4">Các Workshop Làm Bánh Pizza Sắp Tới</h1>
                     <p className="max-w-2xl mx-auto text-white">
-                        Khám phá các khóa học làm bánh pizza đã lên lịch và lên kế hoạch cho cuộc phiêu lưu ẩm thực của bạn. Học các
+                        Khám phá các workshop làm bánh pizza đã lên lịch và lên kế hoạch cho cuộc phiêu lưu ẩm thực của bạn. Học các
                         kỹ thuật chính thống từ các đầu bếp hàng đầu của chúng tôi trong một môi trường vui vẻ và tương tác.
                     </p>
                 </div>
@@ -170,7 +170,7 @@ export default function PublicWorkshops() {
                 {isLoading && (
                     <div className="flex justify-center items-center h-64">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <span className="ml-2 text-white">Đang tải khóa học...</span>
+                        <span className="ml-2 text-white">Đang tải workshop...</span>
                     </div>
                 )}
 
@@ -186,9 +186,9 @@ export default function PublicWorkshops() {
                 {!isLoading && !error && workshops.length === 0 && (
                     <div className="bg-white rounded-lg shadow p-8 text-center">
                         <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Không có khóa học nào được lên lịch</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Không có workshop nào được lên lịch</h3>
                         <p className="text-gray-500 mb-6">
-                            Chúng tôi hiện không có khóa học nào được lên lịch. Vui lòng quay lại sau để xem các sự kiện sắp tới.
+                            Chúng tôi hiện không có workshop nào được lên lịch. Vui lòng quay lại sau để xem các sự kiện sắp tới.
                         </p>
                     </div>
                 )}
@@ -198,7 +198,7 @@ export default function PublicWorkshops() {
                     <>
                         <div className="mb-6">
                             <p className="text-sm text-white">
-                                {upcomingWorkshops.length} khóa học sắp diễn ra • {regularWorkshops.length} khóa học khác
+                                {upcomingWorkshops.length} workshop sắp diễn ra • {regularWorkshops.length} workshop khác
                             </p>
                         </div>
 
@@ -207,9 +207,9 @@ export default function PublicWorkshops() {
                             <div className="mb-12">
                                 <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-t-lg flex items-center">
                                     <Flame className="h-6 w-6 mr-2 animate-pulse" />
-                                    <h2 className="text-xl font-bold">Khóa Học Sắp Diễn Ra</h2>
+                                    <h2 className="text-xl font-bold">Workshop Sắp Diễn Ra</h2>
                                     <span className="ml-2 bg-white text-orange-600 text-xs font-bold px-2 py-1 rounded-full">
-                                        {upcomingWorkshops.length} khóa học
+                                        {upcomingWorkshops.length} workshop
                                     </span>
                                 </div>
 
@@ -217,7 +217,7 @@ export default function PublicWorkshops() {
                                     <div className="mb-4 flex items-start">
                                         <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 mr-2 flex-shrink-0" />
                                         <p className="text-amber-800">
-                                            Các khóa học dưới đây sẽ diễn ra trong vòng 7 ngày tới. Đăng ký ngay để đảm bảo có chỗ!
+                                            Các workshop dưới đây sẽ diễn ra trong vòng 7 ngày tới. Đăng ký ngay để đảm bảo có chỗ!
                                         </p>
                                     </div>
 
@@ -249,7 +249,7 @@ export default function PublicWorkshops() {
                             <div className="mt-10">
                                 <h2 className="text-xl font-bold mb-4 flex items-center text-white">
                                     <Calendar className="h-5 w-5 mr-2 text-primary" />
-                                    Các Khóa Học Khác ({regularWorkshops.length})
+                                    Các Workshop Khác ({regularWorkshops.length})
                                 </h2>
                                 <div className="space-y-6">
                                     {regularWorkshops.map((workshop) => (
@@ -285,7 +285,7 @@ export default function PublicWorkshops() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg flex items-center">
                         <Loader2 className="h-6 w-6 animate-spin text-primary mr-3" />
-                        <span>Đang tải thông tin khóa học...</span>
+                        <span>Đang tải thông tin workshop...</span>
                     </div>
                 </div>
             )}

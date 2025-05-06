@@ -122,7 +122,7 @@ class WorkshopService {
         try {
             return await get<CustomerWorkshopResponse>(API_ENDPOINTS.WORKSHOP.CUSTOMER_WORKSHOPS(phoneNumber))
         } catch (error) {
-            console.error(`Lỗi khi tải danh sách khóa học đã đăng ký với số điện thoại ${phoneNumber}:`, error)
+            console.error(`Lỗi khi tải danh sách workshop đã đăng ký với số điện thoại ${phoneNumber}:`, error)
             throw error
         }
     }

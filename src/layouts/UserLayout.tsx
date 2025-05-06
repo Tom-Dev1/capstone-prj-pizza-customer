@@ -75,7 +75,7 @@ const UserLayout = () => {
         { name: "Trang Chủ", href: "/customer/dashboard", icon: Home },
         { name: "Đơn Hàng", href: "/customer/orders", icon: ShoppingBag },
         { name: "Yêu Thích", href: "/customer/favorites", icon: Heart },
-        { name: "Khóa Học", href: "/customer/workshops", icon: Calendar },
+        { name: "Workshop", href: "/customer/workshops", icon: Calendar },
         { name: "Cài Đặt", href: "/customer/settings", icon: Settings },
     ]
 

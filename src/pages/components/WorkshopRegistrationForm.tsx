@@ -733,15 +733,15 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                             </div>
                                         </div>
 
-                                        {/* Thông tin tổng quan về khóa học */}
+                                        {/* Thông tin tổng quan về workshop */}
                                         <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
                                             <h5 className="font-medium flex items-center text-blue-700">
                                                 <Calendar className="h-4 w-4 mr-2" />
-                                                Thông tin khóa học
+                                                Thông tin workshop
                                             </h5>
                                             <div className="mt-3 space-y-2 text-sm">
                                                 <div className="flex justify-between">
-                                                    <span className="text-gray-600">Tên khóa học:</span>
+                                                    <span className="text-gray-600">Tên workshop:</span>
                                                     <span className="font-medium">{workshop.name}</span>
                                                 </div>
                                                 <div className="flex justify-between">
@@ -783,7 +783,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                 Chọn sản phẩm
                                             </h5>
                                             <p className="text-xs text-gray-600 mt-1 mb-3">
-                                                Chọn các sản phẩm bạn muốn làm trong khóa học và tùy chọn đi kèm
+                                                Chọn các sản phẩm bạn muốn làm trong workshop và tùy chọn đi kèm
                                             </p>
                                             <div className="bg-blue-50 border border-blue-100 p-2 rounded-md mb-3">
                                                 <p className="text-xs text-blue-700">

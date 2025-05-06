@@ -50,7 +50,7 @@ const AuthLayout = () => {
                     <div className="max-w-md mx-auto text-center">
                         <h1 className="text-4xl md:text-5xl font-bold mb-6">PizzaCapstone</h1>
                         <p className="text-xl mb-8">
-                            Tham gia cộng đồng yêu thích pizza của chúng tôi và nhận quyền truy cập độc quyền vào các ưu đãi đặc biệt, các món mới trong thực đơn và đặt chỗ cho các khóa học.
+                            Tham gia cộng đồng yêu thích pizza của chúng tôi và nhận quyền truy cập độc quyền vào các ưu đãi đặc biệt, các món mới trong thực đơn và đặt chỗ cho các workshop.
                         </p>
                         <div className="relative w-64 h-64 mx-auto my-8">
                             <img

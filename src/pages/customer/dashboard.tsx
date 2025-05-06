@@ -26,7 +26,7 @@ export default function CustomerDashboard() {
         },
         {
             title: "Đăng ký Workshop",
-            description: "Quản lý các khóa học pizza bạn đã đăng ký",
+            description: "Quản lý các workshop pizza bạn đã đăng ký",
             icon: Calendar,
             link: "/customer/workshops",
             color: "bg-amber-50 text-amber-600",
@@ -46,7 +46,7 @@ export default function CustomerDashboard() {
                 <h1 className="text-3xl font-bold mb-2">Xin chào, {user?.name || "Khách hàng"}!</h1>
                 <p className="text-gray-600">
                     Chào mừng bạn đến với trang quản lý tài khoản. Từ đây, bạn có thể quản lý đơn hàng, xem pizza yêu thích và
-                    đăng ký các khóa học làm bánh pizza.
+                    đăng ký các workshop làm bánh pizza.
                 </p>
             </div>
 

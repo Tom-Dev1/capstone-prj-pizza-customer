@@ -73,11 +73,11 @@ export default function CustomerWorkshops() {
                 if (response.success && response.result) {
                     setWorkshops(response.result.items || [])
                 } else {
-                    setError(response.message || "Không thể tải danh sách khóa học đã đăng ký")
+                    setError(response.message || "Không thể tải danh sách workshop đã đăng ký")
                 }
             } catch (err) {
-                console.error("Lỗi khi tải danh sách khóa học:", err)
-                setError("Đã xảy ra lỗi khi tải danh sách khóa học")
+                console.error("Lỗi khi tải danh sách workshop:", err)
+                setError("Đã xảy ra lỗi khi tải danh sách workshop")
             } finally {
                 setIsLoading(false)
             }
@@ -129,8 +129,8 @@ export default function CustomerWorkshops() {
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold mb-2">Khóa Học Đã Đăng Ký</h1>
-                    <p className="text-gray-600">Quản lý và theo dõi các khóa học làm bánh pizza bạn đã đăng ký</p>
+                    <h1 className="text-2xl font-bold mb-2">Workshop Đã Đăng Ký</h1>
+                    <p className="text-gray-600">Quản lý và theo dõi các workshop làm bánh pizza bạn đã đăng ký</p>
                 </div>
                 <div className="mt-4 md:mt-0">
                     <Button onClick={() => handleClick()} variant="outline" className="flex items-center">
@@ -143,13 +143,13 @@ export default function CustomerWorkshops() {
             {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-                    <span className="text-lg">Đang tải danh sách khóa học...</span>
+                    <span className="text-lg">Đang tải danh sách workshop...</span>
                 </div>
             ) : error ? (
                 <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-start">
                     <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
                     <div>
-                        <p className="font-medium">Không thể tải danh sách khóa học</p>
+                        <p className="font-medium">Không thể tải danh sách workshop</p>
                         <p>{error}</p>
                     </div>
                 </div>
@@ -158,10 +158,10 @@ export default function CustomerWorkshops() {
                     <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-xl font-medium text-gray-900 mb-2">Bạn chưa Đăng ký Workshop nào</h3>
                     <p className="text-gray-600 max-w-md mx-auto mb-6">
-                        Khám phá các khóa học làm bánh pizza của chúng tôi và đăng ký ngay để học cách làm những chiếc bánh pizza
+                        Khám phá các workshop làm bánh pizza của chúng tôi và đăng ký ngay để học cách làm những chiếc bánh pizza
                         thơm ngon.
                     </p>
-                    <Button>Khám Phá Khóa Học</Button>
+                    <Button>Khám Phá Workshop</Button>
                 </div>
             ) : (
                 <>
@@ -196,7 +196,7 @@ export default function CustomerWorkshops() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm text-gray-500">Tổng số khóa học</CardTitle>
+                                <CardTitle className="text-sm text-gray-500">Tổng số workshop</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{workshops.length}</div>
@@ -307,7 +307,7 @@ function WorkshopList({ workshops, formatDate }: WorkshopListProps) {
     if (workshops.length === 0) {
         return (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">Không có khóa học nào trong danh mục này</p>
+                <p className="text-gray-500">Không có workshop nào trong danh mục này</p>
             </div>
         )
     }
