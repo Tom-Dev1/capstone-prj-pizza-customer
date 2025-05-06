@@ -252,7 +252,7 @@ export default function WorkshopComponent({
                     {isExpanded ? "Thu Gọn" : "Xem Thêm"}
                 </Button>
                 {workshop.workshopStatus === "OpeningToRegister" && (
-                    workshop.maxParticipantPerRegister >= workshop.maxRegister ? (
+                    workshop.totalRegisteredParticipant >= workshop.maxRegister ? (
                         <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-md flex items-center">
                             <AlertCircle className="h-4 w-4 mr-2" />
                             <span>Workshop đã đủ số lượng đăng ký {workshop.totalRegisteredParticipant}/{workshop.maxRegister}  </span>
