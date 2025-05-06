@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { format } from "date-fns"
 import { Calendar, MapPin, Users, Phone, Clock, Wallet, Pizza, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -42,20 +41,40 @@ export default function WorkshopComponent({
     // Format dates for display
     const formatDate = (dateString: string) => {
         try {
-            return format(new Date(dateString), "PPP")
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            console.error("Ngày không hợp lệ:", dateString)
+            const date = new Date(dateString)
+            const day = date.getDate()
+            const month = date.getMonth() + 1
+            const year = date.getFullYear()
+
+            const monthNames = [
+                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+                "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+            ]
+
+            return `Ngày ${day}, ${monthNames[month - 1]}, ${year}`
+        } catch (err) {
+            console.error("Ngày không hợp lệ:", dateString, err)
             return "Ngày không hợp lệ"
         }
     }
 
     const formatDateTime = (dateString: string) => {
         try {
-            return format(new Date(dateString), "PPP p")
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            console.error("Ngày không hợp lệ:", dateString)
+            const date = new Date(dateString)
+            const day = date.getDate()
+            const month = date.getMonth() + 1
+            const year = date.getFullYear()
+            const hours = date.getHours().toString().padStart(2, '0')
+            const minutes = date.getMinutes().toString().padStart(2, '0')
+
+            const monthNames = [
+                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+                "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+            ]
+
+            return `Ngày ${day}, ${monthNames[month - 1]}, ${year} ${hours}:${minutes}`
+        } catch (err) {
+            console.error("Ngày không hợp lệ:", dateString, err)
             return "Ngày không hợp lệ"
         }
     }
