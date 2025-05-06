@@ -203,6 +203,15 @@ export default function WorkshopComponent({
                                 </p>
                             </div>
                         </div>
+                        <div className="flex items-start">
+                            <Users className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-medium">Số người đã đăng ký / Tổng đăng ký</p>
+                                <p className="text-sm text-gray-600">
+                                    {workshop.totalRegisteredParticipant}/{workshop.maxRegister}
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {isExpanded && (
@@ -243,12 +252,16 @@ export default function WorkshopComponent({
                     {isExpanded ? "Thu Gọn" : "Xem Thêm"}
                 </Button>
                 {workshop.workshopStatus === "OpeningToRegister" && (
-
-
-
-                    <Button className={getButtonClass()} onClick={handleRegisterClick}>
-                        Đăng Ký Ngay
-                    </Button>
+                    workshop.maxParticipantPerRegister >= workshop.maxRegister ? (
+                        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-md flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            <span>Workshop đã đủ số lượng đăng ký {workshop.totalRegisteredParticipant}/{workshop.maxRegister}  </span>
+                        </div>
+                    ) : (
+                        <Button className={getButtonClass()} onClick={handleRegisterClick}>
+                            Đăng Ký Ngay
+                        </Button>
+                    )
                 )}
             </CardFooter>
         </Card>

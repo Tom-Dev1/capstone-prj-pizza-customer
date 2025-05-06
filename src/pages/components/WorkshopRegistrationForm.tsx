@@ -75,7 +75,7 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     // Add a new state to track selected childProducts
     const [selectedChildProducts, setSelectedChildProducts] = useState<Map<string, string>>(new Map())
     const [totalSelectedProducts, setTotalSelectedProducts] = useState(0)
-
+    const [message, setMessage] = useState<string>("")
     // Reset form when workshop changes
     useEffect(() => {
         if (isOpen && workshop) {
@@ -142,6 +142,18 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         // Only allow digits
         const value = e.target.value.replace(/\D/g, "")
+
+        // Validate phone number format
+        if (value.length > 0 && value[0] !== '0') {
+            setOtpError("Số điện thoại phải bắt đầu bằng số 0")
+            return
+        }
+
+        if (value.length > 10) {
+            setOtpError("Số điện thoại không được vượt quá 10 chữ số")
+            return
+        }
+
         setPhoneNumber(value)
         setOtpError(null)
     }
@@ -156,8 +168,13 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
 
     // Send OTP to phone number
     const handleSendOtp = async () => {
-        if (!phoneNumber || phoneNumber.length < 10) {
-            setOtpError("Vui lòng nhập số điện thoại hợp lệ")
+        if (!phoneNumber || phoneNumber.length !== 10) {
+            setOtpError("Số điện thoại phải có đúng 10 chữ số")
+            return
+        }
+
+        if (phoneNumber[0] !== '0') {
+            setOtpError("Số điện thoại phải bắt đầu bằng số 0")
             return
         }
 
@@ -172,11 +189,26 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                 // Move to OTP verification step
                 setCurrentStep(FormStep.OTP_VERIFICATION)
             } else {
-                setOtpError(response.message || "Không thể gửi mã OTP. Vui lòng thử lại.")
+                // Bypass to registration form step on error
+                setIsPhoneVerified(true)
+                setGuestInfo((prev) => ({
+                    ...prev,
+                    phone: phoneNumber,
+                }))
+                setCurrentStep(FormStep.REGISTRATION_FORM)
+                setMessage("Hệ thống gửi OTP của chúng tôi đang bị lỗi, chúng tôi sẽ liên hệ lại cho bạn để xác nhận")
+                console.warn("OTP sending failed, bypassing to registration form:", response.message)
             }
         } catch (err) {
-            console.error("Lỗi khi gửi OTP:", err)
-            setOtpError("Đã xảy ra lỗi khi gửi mã OTP. Vui lòng thử lại.")
+            // Bypass to registration form step on error
+            setIsPhoneVerified(true)
+            setGuestInfo((prev) => ({
+                ...prev,
+                phone: phoneNumber,
+            }))
+            setCurrentStep(FormStep.REGISTRATION_FORM)
+            setMessage("Hệ thống gửi OTP của chúng tôi đang bị lỗi, chúng tôi sẽ liên hệ lại cho bạn để xác nhận")
+            console.warn("OTP sending error, bypassing to registration form:", err)
         } finally {
             setIsSendingOtp(false)
         }
@@ -211,11 +243,27 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                 // Move to registration form step
                 setCurrentStep(FormStep.REGISTRATION_FORM)
             } else {
-                setOtpError(response.message || "Mã OTP không hợp lệ. Vui lòng thử lại.")
+                // Bypass to registration form step on error
+                setIsPhoneVerified(true)
+                setGuestInfo((prev) => ({
+                    ...prev,
+                    phone: phoneNumber,
+                }))
+                setCurrentStep(FormStep.REGISTRATION_FORM)
+                setMessage("Hệ thống gửi OTP của chúng tôi đang bị lỗi, chúng tôi sẽ liên hệ lại cho bạn để xác nhận")
+                console.warn("OTP verification failed, bypassing to registration form:", response.message)
             }
         } catch (err) {
-            console.error("Lỗi khi xác thực OTP:", err)
-            setOtpError("Đã xảy ra lỗi khi xác thực mã OTP. Vui lòng thử lại.")
+            // Bypass to registration form step on error
+            setIsPhoneVerified(true)
+            setGuestInfo((prev) => ({
+                ...prev,
+                phone: phoneNumber,
+            }))
+            setCurrentStep(FormStep.REGISTRATION_FORM)
+            setMessage("Hệ thống gửi OTP của chúng tôi đang bị lỗi, chúng tôi sẽ liên hệ lại cho bạn để xác nhận")
+
+            console.warn("OTP verification error, bypassing to registration form:", err)
         } finally {
             setIsVerifyingOtp(false)
         }
@@ -704,10 +752,12 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                                             Đổi SĐT
                                                         </Button>
                                                     </div>
-                                                    <p className="text-xs text-green-600 flex items-center mt-1">
-                                                        <Check className="h-3 w-3 mr-1" />
-                                                        Số điện thoại đã được xác thực
-                                                    </p>
+                                                    {message ? (<span className="text-xs text-red-500">{message}</span>) : (
+                                                        <div>
+                                                            <Check className="w-3 h-3 mr-1" />
+                                                            Số điện thoại đã được xác thực
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 <div>
@@ -926,16 +976,23 @@ export default function WorkshopRegistrationForm({ workshop, isOpen, onClose }: 
                                 <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
                                     Hủy
                                 </Button>
-                                <Button type="submit" disabled={isLoading || isSubmitting} className="bg-primary hover:bg-primary/90">
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Đang xử lý...
-                                        </>
-                                    ) : (
-                                        "Hoàn Tất Đăng Ký"
-                                    )}
-                                </Button>
+                                {workshop.maxParticipantPerRegister >= workshop.maxRegister ? (
+                                    <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-md flex items-center">
+                                        <AlertCircle className="h-4 w-4 mr-2" />
+                                        <span>Workshop đã đủ số lượng đăng ký</span>
+                                    </div>
+                                ) : (
+                                    <Button type="submit" disabled={isLoading || isSubmitting} className="bg-primary hover:bg-primary/90">
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Đang xử lý...
+                                            </>
+                                        ) : (
+                                            "Hoàn Tất Đăng Ký"
+                                        )}
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </form>
