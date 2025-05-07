@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import type { Product, ProductOption } from "@/types/product"
 import { Loader2, AlertCircle, Pizza, ChevronDown, ChevronUp, Plus, Package } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { getOption, getOptionItems, hasChildProducts } from "@/utils/product-helpers"
 import { productService } from "@/services"
@@ -96,9 +95,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                 <Pizza className="h-4 w-4 mr-1" />
                                 {product.name}
                             </h4>
-                            <Badge variant="outline" className="ml-2 text-xs">
-                                {product.productRole}
-                            </Badge>
+
                         </div>
                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
                         <div className="mt-1 font-semibold text-primary">{product.price.toLocaleString()} VND</div>
