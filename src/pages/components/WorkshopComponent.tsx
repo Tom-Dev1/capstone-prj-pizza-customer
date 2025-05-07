@@ -192,7 +192,7 @@ export default function WorkshopComponent({
                             <div>
                                 <p className="font-medium">Sức Chứa</p>
                                 <p className="text-sm text-gray-600">
-                                    Tối đa {workshop.maxParticipantPerRegister} người mỗi đăng ký (Tổng: {workshop.maxRegister})
+                                    Tối đa {workshop.maxParticipantPerRegister} người mỗi đăng ký
                                 </p>
                             </div>
                         </div>
